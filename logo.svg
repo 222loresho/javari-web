@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bgGrad" cx="42%" cy="38%" r="62%">
+      <stop offset="0%" stop-color="#1c3522"/>
+      <stop offset="100%" stop-color="#05090a"/>
+    </radialGradient>
+    <radialGradient id="glowTop" cx="50%" cy="30%" r="45%">
+      <stop offset="0%" stop-color="#c9a84c" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <circle cx="200" cy="200" r="200" fill="url(#bgGrad)"/>
+  <circle cx="200" cy="200" r="200" fill="url(#glowTop)"/>
+  <circle cx="200" cy="200" r="188" fill="none" stroke="#c9a84c" stroke-width="1.6"/>
+  <circle cx="200" cy="200" r="182" fill="none" stroke="#c9a84c" stroke-width="0.4" stroke-dasharray="2 5" opacity="0.55"/>
+
+  <polygon points="200,8 205,14 200,20 195,14"  fill="#c9a84c"/>
+  <polygon points="200,392 205,386 200,380 195,386" fill="#c9a84c"/>
+  <polygon points="8,200 14,195 20,200 14,205"  fill="#c9a84c"/>
+  <polygon points="392,200 386,195 380,200 386,205" fill="#c9a84c"/>
+
+  <path d="M 157 280 C 166 255 181 226 200 152" fill="none" stroke="#c9a84c" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M 173 256 C 157 251 140 237 147 230 C 155 226 166 241 173 256 Z" fill="#c9a84c" opacity="0.83"/>
+  <path d="M 162 249 C 156 243 150 237 147 230" fill="none" stroke="#0d1a10" stroke-width="0.7" opacity="0.5"/>
+  <path d="M 183 233 C 168 226 153 213 159 206 C 167 202 177 217 183 233 Z" fill="#c9a84c" opacity="0.83"/>
+  <path d="M 173 226 C 168 220 162 214 159 206" fill="none" stroke="#0d1a10" stroke-width="0.7" opacity="0.5"/>
+  <path d="M 192 208 C 179 201 166 189 172 183 C 179 179 188 193 192 208 Z" fill="#c9a84c" opacity="0.83"/>
+  <path d="M 183 201 C 178 196 173 190 172 183" fill="none" stroke="#0d1a10" stroke-width="0.7" opacity="0.5"/>
+  <path d="M 198 183 C 187 178 176 169 181 162 C 186 158 194 170 198 183 Z" fill="#c9a84c" opacity="0.76"/>
+
+  <path d="M 243 280 C 234 255 219 226 200 152" fill="none" stroke="#c9a84c" stroke-width="1.15" stroke-linecap="round"/>
+  <path d="M 227 256 C 243 251 260 237 253 230 C 245 226 234 241 227 256 Z" fill="#c9a84c" opacity="0.83"/>
+  <path d="M 238 249 C 244 243 250 237 253 230" fill="none" stroke="#0d1a10" stroke-width="0.7" opacity="0.5"/>
+  <path d="M 217 233 C 232 226 247 213 241 206 C 233 202 223 217 217 233 Z" fill="#c9a84c" opacity="0.83"/>
+  <path d="M 227 226 C 232 220 238 214 241 206" fill="none" stroke="#0d1a10" stroke-width="0.7" opacity="0.5"/>
+  <path d="M 208 208 C 221 201 234 189 228 183 C 221 179 212 193 208 208 Z" fill="#c9a84c" opacity="0.83"/>
+  <path d="M 217 201 C 222 196 227 190 228 183" fill="none" stroke="#0d1a10" stroke-width="0.7" opacity="0.5"/>
+  <path d="M 202 183 C 213 178 224 169 219 162 C 214 158 206 170 202 183 Z" fill="#c9a84c" opacity="0.76"/>
+
+  <circle cx="200" cy="149" r="4"   fill="#c9a84c" filter="url(#softGlow)"/>
+  <circle cx="193" cy="155" r="2.8" fill="#c9a84c" opacity="0.72"/>
+  <circle cx="207" cy="155" r="2.8" fill="#c9a84c" opacity="0.72"/>
+  <circle cx="186" cy="163" r="2"   fill="#c9a84c" opacity="0.45"/>
+  <circle cx="214" cy="163" r="2"   fill="#c9a84c" opacity="0.45"/>
+
+  <path d="M 151 284 C 147 294 152 300 160 298" fill="none" stroke="#c9a84c" stroke-width="0.9" opacity="0.55" stroke-linecap="round"/>
+  <path d="M 249 284 C 253 294 248 300 240 298" fill="none" stroke="#c9a84c" stroke-width="0.9" opacity="0.55" stroke-linecap="round"/>
+
+  <line x1="130" y1="296" x2="270" y2="296" stroke="#c9a84c" stroke-width="0.5" opacity="0.35"/>
+
+  <text x="200" y="322"
+    font-family="Palatino Linotype, Palatino, Book Antiqua, Georgia, serif"
+    font-size="22"
+    font-weight="400"
+    fill="#f2ebe0"
+    text-anchor="middle"
+    letter-spacing="8">VENDAURA</text>
+
+  <line x1="128" y1="332" x2="168" y2="332" stroke="#c9a84c" stroke-width="0.8" opacity="0.85"/>
+  <circle cx="184" cy="332" r="1.5" fill="#c9a84c" opacity="0.7"/>
+  <circle cx="200" cy="332" r="2.5" fill="#c9a84c"/>
+  <circle cx="216" cy="332" r="1.5" fill="#c9a84c" opacity="0.7"/>
+  <line x1="232" y1="332" x2="272" y2="332" stroke="#c9a84c" stroke-width="0.8" opacity="0.85"/>
+</svg>
