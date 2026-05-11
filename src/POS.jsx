@@ -116,9 +116,10 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
 
   const loadOrder = (o) => {
     setPendingSubmittedOrder(o);
-    setSubmittedPinInput("");
-    setSubmittedPinError("");
-    setShowSubmittedPin(true);
+    setPendingAction("loadOrder");
+    setPinInput("");
+    setPinError("");
+    setShowPinModal(true);
   };
 
   const doLoadOrder = (o) => {
@@ -248,6 +249,14 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       if (next === saved) {
         setPinError(""); setShowPinModal(false);
         if (pendingAction === "submit") confirmSubmitPayment();
+        else if (pendingAction === "loadOrder") {
+          const o = pendingSubmittedOrder;
+          setPendingSubmittedOrder(null);
+          setActiveOrder(o);
+          setShowTableEdit(true);
+          setCart(o.items.map(i => ({ product_id: i.product_id, product_name: i.product_name, price: i.price, quantity: i.quantity, subtotal: i.subtotal })));
+          setMessage(`Editing ${o.table_name}`);
+        }
         else confirmSaveTable();
       } else {
         setPinError("Wrong PIN — try again"); setPinInput("");
@@ -622,11 +631,16 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         <div className="modal-overlay">
           <div className="modal pin-modal">
             <div className="pin-modal-title">
-              🔒 {pendingAction==="submit" ? "Confirm Payment" : "Save Table"}
+              🔒 {pendingAction==="submit" ? "Confirm Payment" : pendingAction==="loadOrder" ? "Verify Identity" : "Save Table"}
             </div>
             <div className="pin-modal-sub">
-              Enter your PIN to {pendingAction==="submit" ? "submit this payment" : "save this table"}
+              Enter your PIN to {pendingAction==="submit" ? "submit this payment" : pendingAction==="loadOrder" ? `edit ${pendingSubmittedOrder?.table_name}` : "save this table"}
             </div>
+            {pendingAction==="loadOrder" && pendingSubmittedOrder?.status==="submitted" && (
+              <div style={{background:"rgba(245,159,0,0.1)",border:"1px solid rgba(245,159,0,0.3)",borderRadius:"var(--r-sm)",padding:"10px 14px",marginBottom:"16px",fontSize:"12px",color:"#f59f00",textAlign:"center"}}>
+                ⚠️ Editing will reset the payment submission and log you out.
+              </div>
+            )}
             <div className="pin-dots">
               {[0,1,2,3].map(i => (
                 <div key={i} className={`pin-dot ${pinInput.length>i?"filled":""}`}>
