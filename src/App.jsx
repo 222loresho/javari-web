@@ -3,6 +3,7 @@ import Login from "./Login";
 import POS from "./POS";
 import Admin from "./Admin";
 import CashierBills from "./CashierBills";
+import SuperAdmin from "./SuperAdmin";
 
 export default function App() {
   const [user, setUser] = useState(() => {
@@ -20,6 +21,9 @@ export default function App() {
   };
 
   if (!user) return <Login onLogin={handleLogin} />;
+
+  if (user.role === "super_admin")
+    return <SuperAdmin user={user} onLogout={handleLogout} />;
 
   if (user.role === "admin" && view === "pos")
     return <POS user={user} onLogout={handleLogout} onSwitchToBills={() => setView("default")} />;
