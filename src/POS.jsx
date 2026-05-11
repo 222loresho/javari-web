@@ -115,13 +115,13 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   };
 
   const loadOrder = (o) => {
-    if (o.status === "submitted") {
-      setPendingSubmittedOrder(o);
-      setSubmittedPinInput("");
-      setSubmittedPinError("");
-      setShowSubmittedPin(true);
-      return;
-    }
+    setPendingSubmittedOrder(o);
+    setSubmittedPinInput("");
+    setSubmittedPinError("");
+    setShowSubmittedPin(true);
+  };
+
+  const doLoadOrder = (o) => {
     setActiveOrder(o);
     setShowTableEdit(true);
     setCart(o.items.map(i => ({ product_id: i.product_id, product_name: i.product_name, price: i.price, quantity: i.quantity, subtotal: i.subtotal })));
@@ -593,9 +593,11 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
             <div className="pin-modal-sub">
               Enter your PIN to edit {pendingSubmittedOrder?.table_name}
             </div>
-            <div style={{background:"rgba(245,159,0,0.1)",border:"1px solid rgba(245,159,0,0.3)",borderRadius:"var(--r-sm)",padding:"10px 14px",marginBottom:"16px",fontSize:"12px",color:"#f59f00",textAlign:"center"}}>
-              ⚠️ This order was submitted for payment. Editing will reset the submission and log you out.
-            </div>
+            {pendingSubmittedOrder?.status === "submitted" && (
+              <div style={{background:"rgba(245,159,0,0.1)",border:"1px solid rgba(245,159,0,0.3)",borderRadius:"var(--r-sm)",padding:"10px 14px",marginBottom:"16px",fontSize:"12px",color:"#f59f00",textAlign:"center"}}>
+                ⚠️ This order was submitted for payment. Editing will reset the submission and log you out.
+              </div>
+            )}
             <div className="pin-dots">
               {[0,1,2,3].map(i => (
                 <div key={i} className={`pin-dot ${submittedPinInput.length>i?"filled":""}`}>
