@@ -25,7 +25,11 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const [showPayModal,    setShowPayModal]    = useState(false);
   const [receipt,         setReceipt]         = useState(null);
   const [view,            setView]            = useState("sales");
-  const [showTableEdit,   setShowTableEdit]   = useState(false);
+  const [showTableEdit,        setShowTableEdit]        = useState(false);
+  const [showSubmittedPin,     setShowSubmittedPin]     = useState(false);
+  const [submittedPinInput,    setSubmittedPinInput]    = useState("");
+  const [submittedPinError,    setSubmittedPinError]    = useState("");
+  const [pendingSubmittedOrder,setPendingSubmittedOrder] = useState(null);
   const [selectedWaiter,  setSelectedWaiter]  = useState("all");
   const receiptRef = useRef();
 
@@ -111,10 +115,41 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   };
 
   const loadOrder = (o) => {
+    if (o.status === "submitted") {
+      setPendingSubmittedOrder(o);
+      setSubmittedPinInput("");
+      setSubmittedPinError("");
+      setShowSubmittedPin(true);
+      return;
+    }
     setActiveOrder(o);
     setShowTableEdit(true);
     setCart(o.items.map(i => ({ product_id: i.product_id, product_name: i.product_name, price: i.price, quantity: i.quantity, subtotal: i.subtotal })));
     setMessage(`Editing ${o.table_name}`);
+  };
+
+  const handleSubmittedPinKey = (k) => {
+    if (k === "back") { setSubmittedPinInput(p => p.slice(0,-1)); return; }
+    if (k === "C")    { setSubmittedPinInput(""); return; }
+    if (submittedPinInput.length >= 4) return;
+    const next = submittedPinInput + k;
+    setSubmittedPinInput(next);
+    if (next.length === 4) {
+      const saved = localStorage.getItem("userpin");
+      if (next === saved) {
+        setShowSubmittedPin(false);
+        setSubmittedPinError("");
+        const o = pendingSubmittedOrder;
+        setActiveOrder(o);
+        setShowTableEdit(true);
+        setCart(o.items.map(i => ({ product_id: i.product_id, product_name: i.product_name, price: i.price, quantity: i.quantity, subtotal: i.subtotal })));
+        setMessage(`Editing ${o.table_name}`);
+        setPendingSubmittedOrder(null);
+      } else {
+        setSubmittedPinError("Wrong PIN — try again");
+        setSubmittedPinInput("");
+      }
+    }
   };
 
   const clearActiveOrder = () => {
@@ -148,11 +183,14 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         items: cart.map(i => ({ product_id: i.product_id, product_name: i.product_name, quantity: i.quantity, price: i.price, subtotal: i.subtotal })),
         total
       });
-      setMessage(wasSubmitted
-        ? `${activeOrder.table_name} updated — payment reset to pending`
-        : `${activeOrder.table_name} updated!`
-      );
-      setCart([]); setActiveOrder(null); setShowTableEdit(false); fetchOrders();
+      if (wasSubmitted) {
+        setCart([]); setActiveOrder(null); setShowTableEdit(false);
+        setMessage(`${activeOrder.table_name} updated — logging out`);
+        setTimeout(() => onLogout(), 1500);
+      } else {
+        setMessage(`${activeOrder.table_name} updated!`);
+        setCart([]); setActiveOrder(null); setShowTableEdit(false); fetchOrders();
+      }
     } catch { setMessage("Failed to update"); }
   };
 
@@ -544,6 +582,36 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
               <button className="btn btn-dark" style={{flex:1}} onClick={printReceipt}>🖨️ Print</button>
               <button className="btn btn-primary" style={{flex:1}} onClick={() => setReceipt(null)}>Close</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showSubmittedPin && (
+        <div className="modal-overlay">
+          <div className="modal pin-modal">
+            <div className="pin-modal-title">🔒 Verify Identity</div>
+            <div className="pin-modal-sub">
+              Enter your PIN to edit {pendingSubmittedOrder?.table_name}
+            </div>
+            <div style={{background:"rgba(245,159,0,0.1)",border:"1px solid rgba(245,159,0,0.3)",borderRadius:"var(--r-sm)",padding:"10px 14px",marginBottom:"16px",fontSize:"12px",color:"#f59f00",textAlign:"center"}}>
+              ⚠️ This order was submitted for payment. Editing will reset the submission and log you out.
+            </div>
+            <div className="pin-dots">
+              {[0,1,2,3].map(i => (
+                <div key={i} className={`pin-dot ${submittedPinInput.length>i?"filled":""}`}>
+                  {submittedPinInput[i] ? "●" : ""}
+                </div>
+              ))}
+            </div>
+            {submittedPinError && <div className="message message-error" style={{margin:"0 0 8px"}}>{submittedPinError}</div>}
+            <div className="keypad">
+              {[1,2,3,4,5,6,7,8,9,"C",0,"⌫"].map((k,i) => (
+                <button key={i}
+                  className={`keypad-btn ${k==="C"?"keypad-clear":""} ${k==="⌫"?"keypad-back":""}`}
+                  onClick={() => handleSubmittedPinKey(k==="⌫"?"back":String(k))}>{k}</button>
+              ))}
+            </div>
+            <button className="btn btn-ghost full-btn" onClick={() => { setShowSubmittedPin(false); setPendingSubmittedOrder(null); }}>Cancel</button>
           </div>
         </div>
       )}
