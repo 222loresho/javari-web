@@ -1,8 +1,8 @@
 {
-  "name": "javari-web",
+  "name": "vendaura-web",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://222loresho.github.io/javari-web",
+  "homepage": "https://222loresho.github.io/vendaura-web",
   "type": "module",
   "scripts": {
     "dev": "vite",

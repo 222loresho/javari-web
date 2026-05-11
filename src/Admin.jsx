@@ -69,7 +69,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
   return (
     <div className="page">
       <div className="header">
-        <h2>⚙️ Admin — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--green)"}}>Javari</span></h2>
+        <h2>⚙️ Admin — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--green)"}}>Vendaura</span></h2>
         <div className="header-right">
           <span className="header-user">👤 {user.name}</span>
           {onSwitchToPOS && <button className="btn btn-success btn-sm" onClick={onSwitchToPOS}>🛒 POS</button>}

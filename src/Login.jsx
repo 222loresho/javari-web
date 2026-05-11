@@ -39,7 +39,7 @@ export default function Login({ onLogin }) {
     <div className="login-page">
       <div className="login-card">
         <div className="login-logo-wrap">
-          <img src="/javari-web/logo.png" alt="Javari" className="login-logo" />
+          <img src="/javari-web/logo.svg" alt="Vendaura" className="login-logo" />
         </div>
         <div className="login-form">
           <input className="input" placeholder="Username" value={username}

@@ -5,11 +5,11 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const [products,        setProducts]        = useState([]);
   const [categories,      setCategories]      = useState([]);
   const [cart, setCart] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem("javari_cart") || "[]"); }
+    try { return JSON.parse(sessionStorage.getItem("vendaura_cart") || "[]"); }
     catch { return []; }
   });
   const [splits, setSplits] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem("javari_splits") || JSON.stringify([{ method: "cash", amount: "", ref: "" }])); }
+    try { return JSON.parse(sessionStorage.getItem("vendaura_splits") || JSON.stringify([{ method: "cash", amount: "", ref: "" }])); }
     catch { return [{ method: "cash", amount: "", ref: "" }]; }
   });
   const [showPinModal,    setShowPinModal]    = useState(false);
@@ -30,11 +30,11 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const receiptRef = useRef();
 
   useEffect(() => {
-    sessionStorage.setItem("javari_cart", JSON.stringify(cart));
+    sessionStorage.setItem("vendaura_cart", JSON.stringify(cart));
   }, [cart]);
 
   useEffect(() => {
-    sessionStorage.setItem("javari_splits", JSON.stringify(splits));
+    sessionStorage.setItem("vendaura_splits", JSON.stringify(splits));
   }, [splits]);
 
   const fetchProducts   = () => api.get("/products/").then(r => setProducts(r.data));
@@ -47,7 +47,11 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         api.get("/orders/submitted").catch(() => ({ data: [] })),
         api.get("/orders/confirmed").catch(() => ({ data: [] }))
       ]);
-      setPendingOrders(pend.data.filter(o => o.status === "pending"));
+      const submitted_in_tables = sub.data.filter(o => o.status === "submitted");
+      setPendingOrders([
+        ...pend.data.filter(o => o.status === "pending"),
+        ...submitted_in_tables
+      ]);
       const seen = new Set();
       const all  = [];
       [...sub.data, ...conf.data].forEach(o => {
@@ -138,12 +142,16 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
 
   const updateTable = async () => {
     if (!cart.length) return setMessage("Cart is empty!");
+    const wasSubmitted = activeOrder.status === "submitted";
     try {
       await api.put(`/orders/${activeOrder.id}`, {
         items: cart.map(i => ({ product_id: i.product_id, product_name: i.product_name, quantity: i.quantity, price: i.price, subtotal: i.subtotal })),
         total
       });
-      setMessage(`${activeOrder.table_name} updated!`);
+      setMessage(wasSubmitted
+        ? `${activeOrder.table_name} updated — payment reset to pending`
+        : `${activeOrder.table_name} updated!`
+      );
       setCart([]); setActiveOrder(null); setShowTableEdit(false); fetchOrders();
     } catch { setMessage("Failed to update"); }
   };
@@ -245,7 +253,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   return (
     <div className="page">
       <div className="header">
-        <h2>🛒 POS — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--green)"}}>Javari</span></h2>
+        <h2>🛒 POS — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--green)"}}>Vendaura</span></h2>
         <div className="header-right">
           <span className="header-user">👤 {user.name}</span>
           {onSwitchToBills && <button className="btn btn-ghost btn-sm" onClick={onSwitchToBills}>💰 Bills</button>}
@@ -301,7 +309,10 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                         <div className="table-card-body" onClick={() => loadOrder(o)}>
                           <div className="table-card-header">
                             <span className="table-number">{o.table_name}</span>
-                            <span className="table-order">{o.order_number}</span>
+                            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"3px"}}>
+                              <span className="table-order">{o.order_number}</span>
+                              {o.status==="submitted" && <span style={{fontSize:"9px",background:"rgba(245,159,0,0.2)",color:"#f59f00",padding:"1px 6px",borderRadius:"99px",fontWeight:"700"}}>SUBMITTED</span>}
+                            </div>
                           </div>
                           <div className="table-meta">
                             <span>👤 {o.waiter_name}</span>
@@ -508,7 +519,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
           <div className="modal modal-receipt">
             <div ref={receiptRef}>
               <div className="receipt-header">
-                <div className="receipt-logo">JAVARI</div>
+                <div className="receipt-logo">VENDAURA</div>
                 <div className="receipt-sub">Loresho, Nairobi</div>
               </div>
               <div className="receipt-divider" />
@@ -527,7 +538,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                 </div>
               ))}
               <div className="receipt-divider" />
-              <div className="receipt-thanks">Thank you for visiting Javari 🙏</div>
+              <div className="receipt-thanks">Thank you for visiting Vendaura 🙏</div>
             </div>
             <div className="modal-actions" style={{marginTop:"16px"}}>
               <button className="btn btn-dark" style={{flex:1}} onClick={printReceipt}>🖨️ Print</button>
