@@ -60,7 +60,6 @@ export default function UserManagement() {
           <input className="input" type="number" placeholder={editUser?"New PIN (blank=keep)":"4-digit PIN"} maxLength={4} value={form.pin} onChange={e => setForm({...form,pin:e.target.value.slice(0,4)})} />
           <select className="input" value={form.role} onChange={e => setForm({...form,role:e.target.value})}>
             <option value="cashier">💰 Cashier</option>
-            <option value="admin">👑 Admin</option>
             <option value="waiter">🤵 Waiter</option>
           </select>
           <div className="modal-actions">
