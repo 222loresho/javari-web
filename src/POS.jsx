@@ -31,6 +31,8 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const [submittedPinError,    setSubmittedPinError]    = useState("");
   const [pendingSubmittedOrder,setPendingSubmittedOrder] = useState(null);
   const [selectedWaiter,  setSelectedWaiter]  = useState("all");
+  const [noteModal,       setNoteModal]       = useState(null);
+  const [noteText,        setNoteText]        = useState("");
   const receiptRef = useRef();
 
   useEffect(() => {
@@ -168,7 +170,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       await api.post("/orders/", {
         table_name:  name,
         waiter_name: user.name,
-        items: cart.map(i => ({ product_id: i.product_id, product_name: i.product_name, quantity: i.quantity, price: i.price, subtotal: i.subtotal })),
+        items: cart.map(i => ({ product_id: i.product_id, product_name: i.product_name, quantity: i.quantity, price: i.price, subtotal: i.subtotal, note: i.note||"" })),
         total
       });
       setMessage(`Saved as ${name}!`);
@@ -181,7 +183,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
     const wasSubmitted = activeOrder.status === "submitted";
     try {
       await api.put(`/orders/${activeOrder.id}`, {
-        items: cart.map(i => ({ product_id: i.product_id, product_name: i.product_name, quantity: i.quantity, price: i.price, subtotal: i.subtotal })),
+        items: cart.map(i => ({ product_id: i.product_id, product_name: i.product_name, quantity: i.quantity, price: i.price, subtotal: i.subtotal, note: i.note||"" })),
         total
       });
       if (wasSubmitted) {
@@ -264,6 +266,16 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
     }
   };
 
+  const saveNote = () => {
+    setCart(c => c.map(i =>
+      i.product_id === noteModal
+        ? { ...i, note: noteText }
+        : i
+    ));
+    setNoteModal(null);
+    setNoteText("");
+  };
+
   const printBill    = (o) => import("./print").then(m => m.printBill(o));
   const printReceipt = ()  => import("./print").then(m => m.printReceipt(receipt));
 
@@ -293,7 +305,18 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         </div>
       ))}
       <button className="btn-add-split" onClick={() => setSplits([...splits, { method: "cash", amount: "", ref: "" }])}>+ Add Payment Method</button>
-      <div className="split-total">Paid: <strong>KSh {splits.reduce((a,s) => a+(parseFloat(s.amount)||0), 0)}</strong> / KSh {orderTotal}</div>
+      {(() => {
+        const paid   = splits.reduce((a,s) => a+(parseFloat(s.amount)||0), 0);
+        const change = paid - orderTotal;
+        const short  = orderTotal - paid;
+        return (
+          <div className="split-total">
+            Paid: <strong style={{color:paid>=orderTotal?"var(--green)":"var(--red)"}}>KSh {paid}</strong> / KSh {orderTotal}
+            {change > 0 && <span style={{marginLeft:"10px",color:"var(--green)",fontWeight:"700"}}>Change: KSh {change.toFixed(0)}</span>}
+            {paid > 0 && change < 0 && <span style={{marginLeft:"10px",color:"var(--red)",fontWeight:"700"}}>Short: KSh {short.toFixed(0)}</span>}
+          </div>
+        );
+      })()}
     </div>
   );
 
@@ -499,8 +522,16 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                     <button className="qty-btn" onClick={() => updateQty(item.product_id,-1)}>−</button>
                     <span className="qty-val">{item.quantity}</span>
                     <button className="qty-btn" onClick={() => updateQty(item.product_id,+1)}>+</button>
-                    <button className="btn-icon text-sm" style={{marginLeft:"auto"}} onClick={() => removeFromCart(item.product_id)}>remove</button>
+                    <button className="btn-icon text-sm" style={{marginLeft:"auto",color:item.note?"var(--green)":"var(--muted)"}}
+                      onClick={() => { setNoteModal(item.product_id); setNoteText(item.note||""); }}
+                      title="Add note">📝</button>
+                    <button className="btn-icon text-sm" onClick={() => removeFromCart(item.product_id)}>✕</button>
                   </div>
+                  {item.note && (
+                    <div style={{fontSize:"11px",color:"var(--green)",marginTop:"4px",fontStyle:"italic",paddingLeft:"2px"}}>
+                      📝 {item.note}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -590,6 +621,39 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
             <div className="modal-actions" style={{marginTop:"16px"}}>
               <button className="btn btn-dark" style={{flex:1}} onClick={printReceipt}>🖨️ Print</button>
               <button className="btn btn-primary" style={{flex:1}} onClick={() => setReceipt(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {noteModal && (
+        <div className="modal-overlay">
+          <div className="modal" style={{maxWidth:"360px"}}>
+            <div className="modal-header">
+              <h3>📝 Item Note</h3>
+              <button className="btn-icon" onClick={() => { setNoteModal(null); setNoteText(""); }}>✕</button>
+            </div>
+            <div style={{fontSize:"12px",color:"var(--muted)",marginBottom:"12px"}}>
+              Add special instructions for this item
+            </div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:"12px"}}>
+              {["No onions","Extra sauce","Well done","Medium rare","No ice","Extra spicy","Mild","No salt","Gluten free","Dairy free"].map(s => (
+                <button key={s}
+                  style={{padding:"5px 10px",borderRadius:"99px",border:"1px solid var(--border-mid)",background:noteText===s?"var(--accent)":"var(--card)",color:noteText===s?"var(--text)":"var(--muted)",cursor:"pointer",fontSize:"11px",fontFamily:"Outfit,sans-serif",fontWeight:"600",transition:"all 0.15s"}}
+                  onClick={() => setNoteText(noteText===s?"":s)}>{s}</button>
+              ))}
+            </div>
+            <textarea
+              className="input"
+              rows="2"
+              placeholder="Or type a custom note..."
+              value={noteText}
+              onChange={e => setNoteText(e.target.value)}
+              style={{resize:"vertical"}}
+            />
+            <div className="modal-actions">
+              <button className="btn btn-primary" style={{flex:1}} onClick={saveNote}>Save Note</button>
+              <button className="btn btn-ghost"   style={{flex:1}} onClick={() => { setNoteModal(null); setNoteText(""); }}>Cancel</button>
             </div>
           </div>
         </div>

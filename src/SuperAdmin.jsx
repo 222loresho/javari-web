@@ -155,7 +155,7 @@ export default function SuperAdmin({ user, onLogout }) {
   const fetchAll = () => {
     api.get("/superadmin/markets").then(r => setMarkets(r.data)).catch(()=>{});
     api.get("/superadmin/dashboard").then(r => setDashboard(r.data)).catch(()=>{});
-    api.get("/superadmin/users").then(r => setUsers(r.data.filter(u => ['admin','super_admin'].includes(u.role)))).catch(()=>{});
+    api.get("/superadmin/users").then(r => setUsers(r.data)).catch(()=>{});
   };
   useEffect(() => { fetchAll(); }, []);
 
@@ -256,7 +256,7 @@ export default function SuperAdmin({ user, onLogout }) {
         .sa-nav-btn:hover { background: rgba(201,168,76,0.08) !important; }
         .sa-nav-btn.active { background: rgba(201,168,76,0.12) !important; border-color: rgba(201,168,76,0.3) !important; }
         .mkt-card { transition: all 0.2s; }
-        .mkt-card:hover { border-color: rgba(201,168,76,0.3) !important; }
+        .mkt-card:hover { border-color: rgba(201,168,76,0.3) !important; transform: translateY(-1px); }
         .sa-input { display:block;width:100%;padding:10px 14px;background:#0d1117;border:1px solid rgba(201,168,76,0.15);border-radius:8px;color:#e2e8f0;font-size:13px;font-family:Outfit,sans-serif;margin-bottom:10px;outline:none;box-sizing:border-box;transition:border-color 0.2s; }
         .sa-input:focus { border-color:rgba(201,168,76,0.5); }
         .sa-input option { background:#0d1117; }
@@ -264,50 +264,12 @@ export default function SuperAdmin({ user, onLogout }) {
         .sa-btn:active { transform:scale(0.96); }
         .qbtn { padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;font-family:Outfit,sans-serif;border:1px solid;transition:all 0.15s; }
         .qbtn:hover { opacity:0.8; }
-
-        /* ── Responsive ── */
-        .sa-layout { display:flex; min-height:100vh; }
-        .sa-sidebar { width:220px; flex-shrink:0; }
-        .sa-main   { flex:1; min-width:0; padding-bottom:20px; }
-        .sa-bottom-nav { display:none; }
-
-        @media (max-width: 768px) {
-          .sa-layout  { flex-direction:column; }
-          .sa-sidebar { display:none; }
-          .sa-main    { padding-bottom:80px; }
-          .sa-bottom-nav {
-            display:flex;
-            position:fixed; bottom:0; left:0; right:0; z-index:500;
-            background:#0a0e0b;
-            border-top:1px solid rgba(201,168,76,0.15);
-            padding:8px 4px;
-            gap:2px;
-          }
-          .sa-bottom-btn {
-            flex:1; display:flex; flex-direction:column; align-items:center;
-            gap:3px; padding:6px 2px;
-            background:none; border:none; cursor:pointer;
-            font-family:Outfit,sans-serif; font-size:9px;
-            color:#5c5870; transition:color 0.2s;
-            border-radius:8px;
-          }
-          .sa-bottom-btn.active { color:#c9a84c; background:rgba(201,168,76,0.08); }
-          .sa-bottom-btn span.icon { font-size:18px; }
-          .sa-charts-row { grid-template-columns:1fr !important; }
-          .sa-form-grid  { grid-template-columns:1fr !important; }
-          .sa-filters    { flex-direction:column !important; }
-          .sa-kpi-grid   { grid-template-columns:repeat(2,1fr) !important; }
-          .sa-actions    { flex-wrap:wrap !important; }
-          .sa-mkt-stats  { grid-template-columns:repeat(2,1fr) !important; }
-          .sa-header-row { flex-direction:column !important; align-items:flex-start !important; gap:10px !important; }
-          .sa-page-pad   { padding:14px !important; }
-        }
       `}</style>
 
-      <div className="sa-layout">
+      <div style={{display:"flex",minHeight:"100vh"}}>
 
         {/* ── SIDEBAR ── */}
-        <div className="sa-sidebar" style={{
+        <div style={{
           width:"220px", minHeight:"100vh", flexShrink:0,
           background:"linear-gradient(180deg,#0a0e0b 0%,#050709 100%)",
           borderRight:"1px solid rgba(201,168,76,0.1)",
@@ -363,7 +325,7 @@ export default function SuperAdmin({ user, onLogout }) {
         </div>
 
         {/* ── MAIN CONTENT ── */}
-<div className="sa-main" style={{overflowX:"hidden"}}>
+        <div style={{flex:1,minWidth:0,overflowX:"hidden"}}>
 
           {/* Toast */}
           {message.text && (
@@ -381,12 +343,12 @@ export default function SuperAdmin({ user, onLogout }) {
 
           {/* ── DASHBOARD ── */}
           {tab==="dashboard" && (
-            <div className="sa-page-pad" style={{padding:"24px"}}>
+            <div style={{padding:"24px"}}>
               <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"28px",fontWeight:"600",color:"#c9a84c",marginBottom:"6px"}}>Command Center</div>
               <div style={{fontSize:"13px",color:"#5c5870",marginBottom:"24px"}}>Real-time overview of your Vendaura markets</div>
 
               {/* KPI Grid */}
-              <div className="sa-kpi-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:"12px",marginBottom:"24px"}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:"12px",marginBottom:"24px"}}>
                 <KPICard icon="🏪" label="Total Markets"  value={dashboard?.markets.total||0}        color="#c9a84c" delay={0}/>
                 <KPICard icon="✅" label="Active"         value={dashboard?.markets.active||0}        color="#4ade80" delay={0.05}/>
                 <KPICard icon="🔄" label="Trial"          value={dashboard?.markets.trial||0}         color="#818cf8" delay={0.1}/>
@@ -396,7 +358,7 @@ export default function SuperAdmin({ user, onLogout }) {
               </div>
 
               {/* Charts row */}
-              <div className="sa-charts-row" style={{display:"grid",gridTemplateColumns:"1fr 200px",gap:"16px",marginBottom:"16px"}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 200px",gap:"16px",marginBottom:"16px"}}>
 
                 {/* Revenue trend */}
                 <div style={{background:"#0d1117",border:"1px solid rgba(201,168,76,0.1)",borderRadius:"14px",padding:"20px"}}>
@@ -464,7 +426,7 @@ export default function SuperAdmin({ user, onLogout }) {
           {/* ── MARKETS ── */}
           {tab==="markets" && (
             <div style={{padding:"24px"}}>
-              <div className="sa-header-row" style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"20px",flexWrap:"wrap",gap:"12px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"20px",flexWrap:"wrap",gap:"12px"}}>
                 <div>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"28px",color:"#c9a84c"}}>Markets</div>
                   <div style={{fontSize:"13px",color:"#5c5870"}}>{markets.length} clients · KES {totalSubRev.toLocaleString()}/mo subscription revenue</div>
@@ -479,7 +441,7 @@ export default function SuperAdmin({ user, onLogout }) {
               {showForm && (
                 <div style={{background:"#0d1117",border:"1px solid rgba(201,168,76,0.25)",borderRadius:"14px",padding:"20px",marginBottom:"20px",animation:"fadeSlide 0.3s ease"}}>
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#c9a84c",marginBottom:"16px"}}>{editItem?"✏️ Edit Market":"➕ New Market"}</div>
-                  <div className="sa-form-grid" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 12px"}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 12px"}}>
                     <input className="sa-input" style={{gridColumn:"1/-1"}} placeholder="Restaurant / Business name *" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
                     <input className="sa-input" placeholder="City / Location" value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/>
                     <input className="sa-input" placeholder="Contact person" value={form.contact_name} onChange={e=>setForm({...form,contact_name:e.target.value})}/>
@@ -506,7 +468,7 @@ export default function SuperAdmin({ user, onLogout }) {
               )}
 
               {/* Search + filters */}
-              <div className="sa-filters" style={{display:"flex",gap:"10px",marginBottom:"16px",flexWrap:"wrap"}}>
+              <div style={{display:"flex",gap:"10px",marginBottom:"16px",flexWrap:"wrap"}}>
                 <input className="sa-input" style={{flex:1,minWidth:"180px",marginBottom:0}} placeholder="🔍 Search markets..." value={search} onChange={e=>setSearch(e.target.value)}/>
                 <select className="sa-input" style={{marginBottom:0,width:"auto"}} value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}>
                   <option value="all">All Status</option>
@@ -563,7 +525,7 @@ export default function SuperAdmin({ user, onLogout }) {
                     </div>
 
                     {/* Stats row */}
-                    <div className="sa-mkt-stats" style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:"8px",marginBottom:"12px",background:"rgba(255,255,255,0.02)",borderRadius:"10px",padding:"10px"}}>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:"8px",marginBottom:"12px",background:"rgba(255,255,255,0.02)",borderRadius:"10px",padding:"10px"}}>
                       <div>
                         <div style={{fontSize:"10px",color:"#5c5870",marginBottom:"2px"}}>Monthly Fee</div>
                         <div style={{fontWeight:"700",color:"#c9a84c",fontSize:"13px"}}>{fmtMoney(m.monthly_fee,m.currency)}</div>
@@ -592,7 +554,7 @@ export default function SuperAdmin({ user, onLogout }) {
                     )}
 
                     {/* Actions */}
-                    <div className="sa-actions" style={{display:"flex",gap:"8px",flexWrap:"wrap",alignItems:"center"}}>
+                    <div style={{display:"flex",gap:"8px",flexWrap:"wrap",alignItems:"center"}}>
                       <button className="sa-btn" onClick={()=>startEdit(m)} style={{background:"rgba(255,255,255,0.04)",color:"#94a3b8",border:"1px solid rgba(255,255,255,0.08)"}}>✏️ Edit</button>
                       <button className="sa-btn" onClick={()=>recordPayment(m)} style={{background:"rgba(201,168,76,0.1)",color:"#c9a84c",border:"1px solid rgba(201,168,76,0.25)"}}>💳 Record Payment</button>
                       {m.status!=="active"    && <button className="qbtn" onClick={()=>quickStatus(m,"active")}    style={{background:"rgba(74,222,128,0.1)",color:"#4ade80",borderColor:"rgba(74,222,128,0.2)"}}>✅ Activate</button>}
@@ -670,8 +632,8 @@ export default function SuperAdmin({ user, onLogout }) {
             <div style={{padding:"24px"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"20px"}}>
                 <div>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"28px",color:"#c9a84c"}}>Admins</div>
-                  <div style={{fontSize:"13px",color:"#5c5870"}}>{users.length} admin accounts · Each admin manages their own staff</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"28px",color:"#c9a84c"}}>Users</div>
+                  <div style={{fontSize:"13px",color:"#5c5870"}}>{users.length} total system users</div>
                 </div>
                 <button className="sa-btn" onClick={()=>setShowUForm(!showUForm)} style={{background:"rgba(201,168,76,0.15)",color:"#c9a84c",border:"1px solid rgba(201,168,76,0.3)"}}>
                   {showUForm?"✕ Cancel":"+ Add User"}
@@ -680,13 +642,14 @@ export default function SuperAdmin({ user, onLogout }) {
 
               {showUForm && (
                 <div style={{background:"#0d1117",border:"1px solid rgba(201,168,76,0.25)",borderRadius:"14px",padding:"20px",marginBottom:"20px",animation:"fadeSlide 0.3s ease"}}>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#c9a84c",marginBottom:"6px"}}>➕ New Admin</div>
-                  <div style={{fontSize:"12px",color:"#5c5870",marginBottom:"16px"}}>Admins manage their own cashiers and waiters</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#c9a84c",marginBottom:"16px"}}>➕ New User</div>
                   <input className="sa-input" placeholder="Full Name" value={userForm.name} onChange={e=>setUserForm({...userForm,name:e.target.value})}/>
                   <input className="sa-input" placeholder="Username (lowercase)" value={userForm.username} onChange={e=>setUserForm({...userForm,username:e.target.value.toLowerCase()})}/>
                   <input className="sa-input" type="number" placeholder="4-digit PIN" maxLength={4} value={userForm.pin} onChange={e=>setUserForm({...userForm,pin:e.target.value.slice(0,4)})}/>
                   <select className="sa-input" value={userForm.role} onChange={e=>setUserForm({...userForm,role:e.target.value})}>
                     <option value="admin">⚙️ Admin</option>
+                    <option value="cashier">💰 Cashier</option>
+                    <option value="waiter">🤵 Waiter</option>
                     <option value="super_admin">👑 Super Admin</option>
                   </select>
                   <div style={{display:"flex",gap:"10px"}}>
@@ -719,19 +682,7 @@ export default function SuperAdmin({ user, onLogout }) {
             </div>
           )}
         </div>
-      {/* ── BOTTOM NAV (mobile) ── */}
-      <nav className="sa-bottom-nav">
-        {NAV.map(n => (
-          <button key={n.id} className={`sa-bottom-btn ${tab===n.id?"active":""}`} onClick={() => setTab(n.id)}>
-            <span className="icon">{n.icon}</span>
-            <span>{n.label}</span>
-          </button>
-        ))}
-        <button className="sa-bottom-btn" onClick={onLogout}>
-          <span className="icon">🚪</span>
-          <span>Logout</span>
-        </button>
-      </nav>
+      </div>
     </div>
   );
 }

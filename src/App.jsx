@@ -3,6 +3,7 @@ import Login from "./Login";
 import POS from "./POS";
 import Admin from "./Admin";
 import CashierBills from "./CashierBills";
+import useSessionTimeout from "./useSessionTimeout";
 import SuperAdmin from "./SuperAdmin";
 
 export default function App() {
@@ -13,6 +14,14 @@ export default function App() {
   const [view, setView] = useState("default");
 
   const handleLogin  = (u) => { setUser(u); setView("default"); };
+  const TIMEOUT_MINUTES = 30;
+  useSessionTimeout(() => {
+    if (user) {
+      handleLogout();
+      alert("You have been logged out due to inactivity.");
+    }
+  }, TIMEOUT_MINUTES);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
