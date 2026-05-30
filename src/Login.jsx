@@ -62,6 +62,28 @@ export default function Login({ onLogin }) {
             ))}
           </div>
           {error   && <div className="message message-error">{error}</div>}
+
+          <div style={{textAlign:"center",marginTop:"8px"}}>
+            
+              href="https://222loresho.github.io/QR-MENU/"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                fontSize:"12px",
+                color:"var(--muted)",
+                textDecoration:"none",
+                display:"inline-flex",
+                alignItems:"center",
+                gap:"5px",
+                padding:"6px 14px",
+                border:"1px solid var(--border)",
+                borderRadius:"99px",
+                transition:"all 0.2s",
+              }}
+            >
+              📋 View Our Menu
+            </a>
+          </div>
           {loading && <div className="message message-info">Logging in...</div>}
         </div>
       </div>

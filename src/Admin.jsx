@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "./api";
 import ClearedBills   from "./ClearedBills";
+import MenuQR         from "./MenuQR";
 import UserManagement from "./UserManagement";
 import DailyReport    from "./DailyReport";
 import LowStock       from "./LowStock";
@@ -64,6 +65,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
     { id:"report",     label:"📊 Daily" },
     { id:"chart",      label:"📈 Revenue" },
     { id:"lowstock",   label: lowCount > 0 ? `⚠️ Stock (${lowCount})` : "⚠️ Stock" },
+    { id:"menu",       label:"📋 Menu" },
   ];
 
   return (
@@ -158,6 +160,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
       {tab === "report"   && <DailyReport />}
       {tab === "chart"    && <RevenueChart />}
       {tab === "lowstock" && <LowStock onCount={setLowCount} />}
+      {tab === "menu"     && <MenuQR />}
     </div>
   );
 }
