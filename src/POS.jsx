@@ -325,6 +325,27 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
     }
   };
 
+  useEffect(() => {
+    if (!showPinModal && !showSubmittedPin) return;
+    const onKey = (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      const press = (k) => {
+        if (showPinModal) handlePinEntry(k);
+        else handleSubmittedPinKey(k);
+      };
+      if (e.key >= "0" && e.key <= "9") { e.preventDefault(); press(e.key); }
+      else if (e.key === "Backspace")   { e.preventDefault(); press("back"); }
+      else if (e.key === "Escape") {
+        if (showPinModal) setShowPinModal(false);
+        else { setShowSubmittedPin(false); setPendingSubmittedOrder(null); }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showPinModal, showSubmittedPin, pinInput, submittedPinInput]);
+
   const saveNote = () => {
     setCart(c => c.map(i =>
       i.product_id === noteModal
@@ -341,7 +362,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   return (
     <div className="page">
       <div className="header">
-        <h2>🛒 POS — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--green)"}}>Vendaura</span></h2>
+        <h2>🛒 POS — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--accent-hi)"}}>Vendaura</span></h2>
         <div className="header-right">
           <span className="header-user">👤 {user.name}</span>
           {onSwitchToBills && <button className="btn btn-ghost btn-sm" onClick={onSwitchToBills}>💰 Bills</button>}

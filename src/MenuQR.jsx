@@ -27,7 +27,7 @@ export default function MenuQR() {
       {/* Header */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px",flexWrap:"wrap",gap:"10px"}}>
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"var(--green)"}}>📋 Digital Menu</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"var(--accent-hi)"}}>📋 Digital Menu</div>
           <div style={{fontSize:"12px",color:"var(--muted)",marginTop:"2px"}}>QR code · menu preview · customer link</div>
         </div>
         <div style={{display:"flex",gap:"8px"}}>
@@ -54,7 +54,7 @@ export default function MenuQR() {
           gap:"16px",
           animation:"fadeIn 0.3s ease",
         }}>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"18px",color:"var(--green)"}}>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"18px",color:"var(--accent-hi)"}}>
             Scan to View Menu
           </div>
 

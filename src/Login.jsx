@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "./api";
 
 export default function Login({ onLogin }) {
@@ -34,6 +34,19 @@ export default function Login({ onLogin }) {
     setPin(next);
     if (next.length === 4) doLogin(next);
   };
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (loading || e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (e.key >= "0" && e.key <= "9")      { e.preventDefault(); handleKey(e.key); }
+      else if (e.key === "Backspace")        { e.preventDefault(); handleKey("back"); }
+      else if (e.key === "Escape")           { handleKey("C"); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pin, loading]);
 
   return (
     <div className="login-page">
