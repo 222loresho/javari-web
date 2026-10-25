@@ -338,36 +338,6 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const printBill    = (o) => import("./print").then(m => m.printBill(o));
   const printReceipt = ()  => import("./print").then(m => m.printReceipt(receipt));
 
-  const SplitFields = ({ orderTotal }) => (
-    <div className="split-wrap">
-      <div className="split-label">Payment Method(s)</div>
-      {splits.map((split, idx) => (
-        <div key={idx} className="split-row">
-          <div className="split-top">
-            <select className="input" style={{ margin: 0, flex: 1 }} value={split.method}
-              onChange={e => setSplits(splits.map((s,i) => i===idx ? {...s, method: e.target.value, ref: ""} : s))}>
-              <option value="cash">💵 Cash</option>
-              <option value="mpesa">📱 Mpesa</option>
-              <option value="card">💳 Card</option>
-              <option value="billout">📋 Billout</option>
-            </select>
-            <input className="input" type="number" placeholder="Amount" style={{ margin: 0, flex: 1 }}
-              value={split.amount}
-              onChange={e => setSplits(splits.map((s,i) => i===idx ? {...s, amount: e.target.value} : s))} />
-            {splits.length > 1 && (
-              <button className="btn-icon-sm" onClick={() => setSplits(splits.filter((_,i) => i!==idx))}>✕</button>
-            )}
-          </div>
-          {split.method === "mpesa"   && <input className="input" style={{margin:0,marginTop:"6px"}} placeholder="📱 Mpesa code"       value={split.ref} onChange={e => setSplits(splits.map((s,i) => i===idx ? {...s, ref: e.target.value.toUpperCase()} : s))} />}
-          {split.method === "card"    && <input className="input" style={{margin:0,marginTop:"6px"}} placeholder="💳 Card auth number" value={split.ref} onChange={e => setSplits(splits.map((s,i) => i===idx ? {...s, ref: e.target.value.toUpperCase()} : s))} />}
-          {split.method === "billout" && <input className="input" style={{margin:0,marginTop:"6px"}} placeholder="📋 Billout ref"      value={split.ref} onChange={e => setSplits(splits.map((s,i) => i===idx ? {...s, ref: e.target.value.toUpperCase()} : s))} />}
-        </div>
-      ))}
-      <button className="btn-add-split" onClick={() => setSplits([...splits, { method: "cash", amount: "", ref: "" }])}>+ Add Payment Method</button>
-
-    </div>
-  );
-
   return (
     <div className="page">
       <div className="header">
