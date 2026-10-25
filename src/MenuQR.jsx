@@ -85,7 +85,7 @@ export default function MenuQR() {
             <button className="btn btn-primary" onClick={downloadQR}>
               ⬇️ Download QR (600px)
             </button>
-            
+            <a
               href={`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(MENU_URL)}&format=svg`}
               target="_blank" rel="noreferrer"
               className="btn btn-ghost"

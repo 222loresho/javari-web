@@ -64,7 +64,7 @@ export default function Login({ onLogin }) {
           {error   && <div className="message message-error">{error}</div>}
 
           <div style={{textAlign:"center",marginTop:"8px"}}>
-            
+            <a
               href="https://222loresho.github.io/QR-MENU/"
               target="_blank"
               rel="noreferrer"
