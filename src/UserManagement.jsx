@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
+import { Users, X, UserPlus, Pencil, Trash2 } from "lucide-react";
 
 export default function UserManagement() {
   const [users,    setUsers]    = useState([]);
@@ -46,15 +47,15 @@ export default function UserManagement() {
   return (
     <div style={{padding:"14px"}}>
       <div className="flex-between" style={{marginBottom:"16px"}}>
-        <div className="section-title" style={{padding:0,margin:0}}>👥 Users</div>
+        <div className="section-title" style={{padding:0,margin:0}}><Users size={16}/> Users</div>
         <button className="btn btn-primary btn-sm" onClick={() => { resetForm(); setShowForm(!showForm); }}>
-          {showForm&&!editUser?"✕ Cancel":"+ Add User"}
+          {showForm&&!editUser?<><X size={13}/> Cancel</>:<><UserPlus size={13}/> Add User</>}
         </button>
       </div>
       {message && <div className={`toast ${message.includes("created")||message.includes("updated")||message.includes("Deleted")?"toast-success":"toast-error"}`}>{message}</div>}
       {showForm && (
         <div className="card" style={{border:"1px solid var(--accent)",marginBottom:"16px"}}>
-          <div className="section-title" style={{padding:0,marginBottom:"12px"}}>{editUser?"✏️ Edit":"➕ New User"}</div>
+          <div className="section-title" style={{padding:0,marginBottom:"12px"}}>{editUser?<><Pencil size={14}/> Edit</>:<><UserPlus size={14}/> New User</>}</div>
           <input className="input" placeholder="Full Name"   value={form.name}     onChange={e => setForm({...form,name:e.target.value})} />
           <input className="input" placeholder="Username"    value={form.username} onChange={e => setForm({...form,username:e.target.value.toLowerCase()})} disabled={!!editUser} />
           <input className="input" type="number" placeholder={editUser?"New PIN (blank=keep)":"4-digit PIN"} maxLength={4} value={form.pin} onChange={e => setForm({...form,pin:e.target.value.slice(0,4)})} />
@@ -79,9 +80,9 @@ export default function UserManagement() {
             <div className="admin-item-sub">@{u.username} · PIN: {u.pin||"----"}</div>
           </div>
           <div className="admin-item-actions">
-            <button className="btn btn-ghost btn-sm" onClick={() => { setEditUser(u); setForm({name:u.name,username:u.username,role:u.role,pin:""}); setShowForm(true); }}>✏️</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => { setEditUser(u); setForm({name:u.name,username:u.username,role:u.role,pin:""}); setShowForm(true); }}><Pencil size={14}/></button>
             <button className="btn btn-sm" style={{background:u.active?"#555":"var(--accent)",color:"white"}} onClick={() => toggleActive(u)}>{u.active?"Deactivate":"Activate"}</button>
-            <button className="btn btn-danger btn-sm" onClick={() => deleteUser(u)}>🗑️</button>
+            <button className="btn btn-danger btn-sm" onClick={() => deleteUser(u)}><Trash2 size={14}/></button>
           </div>
         </div>
       ))}

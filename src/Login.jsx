@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
+import { BookOpen } from "lucide-react";
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -94,7 +95,7 @@ export default function Login({ onLogin }) {
                 transition:"all 0.2s",
               }}
             >
-              📋 View Our Menu
+              <BookOpen size={12}/> View Our Menu
             </a>
           </div>
           {loading && <div className="message message-info">Logging in...</div>}

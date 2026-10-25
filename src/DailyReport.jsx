@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
+import { BarChart3, ClipboardList, Package, ReceiptText, Trophy, ChevronUp, ChevronDown, Smartphone, CreditCard, Banknote } from "lucide-react";
 
 export default function DailyReport() {
   const [report,   setReport]   = useState(null);
@@ -17,19 +18,20 @@ export default function DailyReport() {
 
   useEffect(() => { fetchReport(); }, [date]);
 
-  const mLabel  = (m) => m==="mpesa"?"📱 Mpesa":m==="card"?"💳 Card":"💵 Cash";
+  const mi      = (el) => <span style={{display:"inline-flex",alignItems:"center",gap:"4px"}}>{el}</span>;
+  const mLabel  = (m) => m==="mpesa"?mi(<><Smartphone size={12}/> Mpesa</>):m==="card"?mi(<><CreditCard size={12}/> Card</>):mi(<><Banknote size={12}/> Cash</>);
   const fmtTime = (iso) => new Date(iso).toLocaleTimeString("en-KE",{hour:"2-digit",minute:"2-digit",hour12:true});
 
   return (
     <div style={{padding:"14px"}}>
       <div className="flex-between" style={{marginBottom:"16px"}}>
-        <div className="section-title" style={{padding:0,margin:0}}>📊 Daily Report</div>
+        <div className="section-title" style={{padding:0,margin:0}}><BarChart3 size={16}/> Daily Report</div>
         <input type="date" className="input" style={{margin:0,width:"auto"}} value={date} onChange={e => setDate(e.target.value)} />
       </div>
       <div className="tabs" style={{marginBottom:"12px",padding:0}}>
         {["summary","items","transactions"].map(v => (
           <button key={v} className={`tab-btn ${view===v?"active":"inactive"}`} onClick={() => setView(v)}>
-            {v==="summary"?"📋 Summary":v==="items"?"📦 Items":"🧾 Transactions"}
+            {v==="summary"?<><ClipboardList size={13}/> Summary</>:v==="items"?<><Package size={13}/> Items</>:<><ReceiptText size={13}/> Transactions</>}
           </button>
         ))}
       </div>
@@ -56,7 +58,7 @@ export default function DailyReport() {
           </div>
           {report.top_products?.length>0 && (
             <div className="card" style={{marginTop:"16px"}}>
-              <div className="section-title" style={{padding:0,marginBottom:"12px"}}>🏆 Top Products</div>
+              <div className="section-title" style={{padding:0,marginBottom:"12px"}}><Trophy size={15}/> Top Products</div>
               {report.top_products.map((p,i) => (
                 <div key={i} className="flex-between" style={{marginBottom:"10px",alignItems:"center"}}>
                   <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
@@ -76,7 +78,7 @@ export default function DailyReport() {
 
       {report && view==="items" && (
         <div className="card">
-          <div className="section-title" style={{padding:0,marginBottom:"12px"}}>📦 All Items Sold</div>
+          <div className="section-title" style={{padding:0,marginBottom:"12px"}}><Package size={15}/> All Items Sold</div>
           <table style={{width:"100%",borderCollapse:"collapse"}}>
             <thead>
               <tr style={{borderBottom:"1px solid var(--card)"}}>
@@ -115,7 +117,7 @@ export default function DailyReport() {
                 </div>
               </div>
               <button className="btn btn-ghost btn-sm" onClick={() => setExpanded(expanded===s.id?null:s.id)}>
-                {expanded===s.id?"▲ Hide Items":"▼ Show Items"}
+                {expanded===s.id?<><ChevronUp size={12}/> Hide Items</>:<><ChevronDown size={12}/> Show Items</>}
               </button>
               {expanded===s.id && (
                 <div style={{marginTop:"10px",borderTop:"1px solid var(--card)",paddingTop:"10px"}}>

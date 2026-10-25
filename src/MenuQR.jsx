@@ -1,12 +1,13 @@
 import { useState } from "react";
+import { BookOpen, UtensilsCrossed, Wine, BedDouble, Info, QrCode, ChevronUp, ExternalLink, Download, Printer, Lightbulb } from "lucide-react";
 
 const MENU_URL  = "https://222loresho.github.io/QR-MENU/";
 const QR_URL    = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(MENU_URL)}`;
 const PAGES     = [
-  { label: "🍽 Food",          url: "https://222loresho.github.io/QR-MENU/menu.html" },
-  { label: "🥂 Drinks",        url: "https://222loresho.github.io/QR-MENU/drinks.html" },
-  { label: "🏨 Accommodation", url: "https://222loresho.github.io/QR-MENU/accommodation.html" },
-  { label: "ℹ️ Info",          url: "https://222loresho.github.io/QR-MENU/info.html" },
+  { label: <><UtensilsCrossed size={13}/> Food</>,      url: "https://222loresho.github.io/QR-MENU/menu.html" },
+  { label: <><Wine size={13}/> Drinks</>,               url: "https://222loresho.github.io/QR-MENU/drinks.html" },
+  { label: <><BedDouble size={13}/> Accommodation</>,   url: "https://222loresho.github.io/QR-MENU/accommodation.html" },
+  { label: <><Info size={13}/> Info</>,                 url: "https://222loresho.github.io/QR-MENU/info.html" },
 ];
 
 export default function MenuQR() {
@@ -27,15 +28,15 @@ export default function MenuQR() {
       {/* Header */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"16px",flexWrap:"wrap",gap:"10px"}}>
         <div>
-          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"var(--accent-hi)"}}>📋 Digital Menu</div>
+          <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"22px",color:"var(--accent-hi)",display:"flex",alignItems:"center",gap:"8px"}}><BookOpen size={18}/> Digital Menu</div>
           <div style={{fontSize:"12px",color:"var(--muted)",marginTop:"2px"}}>QR code · menu preview · customer link</div>
         </div>
         <div style={{display:"flex",gap:"8px"}}>
           <button className="btn btn-ghost btn-sm" onClick={() => setShowQR(!showQR)}>
-            {showQR ? "▲ Hide QR" : "📱 Show QR Code"}
+            {showQR ? <><ChevronUp size={13}/> Hide QR</> : <><QrCode size={13}/> Show QR Code</>}
           </button>
           <a href={MENU_URL} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">
-            🔗 Open Menu
+            <><ExternalLink size={13}/> Open Menu</>
           </a>
         </div>
       </div>
@@ -83,14 +84,14 @@ export default function MenuQR() {
 
           <div style={{display:"flex",gap:"10px"}}>
             <button className="btn btn-primary" onClick={downloadQR}>
-              ⬇️ Download QR (600px)
+              <><Download size={14}/> Download QR (600px)</>
             </button>
             <a
               href={`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(MENU_URL)}&format=svg`}
               target="_blank" rel="noreferrer"
               className="btn btn-ghost"
             >
-              🖨️ Print Size (SVG)
+              <><Printer size={14}/> Print Size (SVG)</>
             </a>
           </div>
 
@@ -104,7 +105,7 @@ export default function MenuQR() {
             textAlign:"center",
             maxWidth:"320px",
           }}>
-            💡 Tip: Print and laminate one QR code per table. Customers scan it to view the full menu on their phone without needing to download anything.
+            <><Lightbulb size={13}/> Tip: Print and laminate one QR code per table.</> Customers scan it to view the full menu on their phone without needing to download anything.
           </div>
         </div>
       )}
@@ -140,10 +141,10 @@ export default function MenuQR() {
           fontSize:"12px",
           color:"var(--muted)",
         }}>
-          <span style={{color:"var(--green)"}}>●</span>
+          <span style={{width:"8px",height:"8px",borderRadius:"50%",background:"var(--green)",display:"inline-block",flexShrink:0,boxShadow:"0 0 6px var(--green)"}}/>
           <span style={{fontFamily:"monospace"}}>{page}</span>
           <a href={page} target="_blank" rel="noreferrer" style={{marginLeft:"auto",color:"var(--green)",textDecoration:"none",fontSize:"11px"}}>
-            Open in new tab ↗
+            Open in new tab <ExternalLink size={11}/>
           </a>
         </div>
         <iframe

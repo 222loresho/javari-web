@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
+import { Settings, Package, Tags, BarChart3, CheckCircle2, Users, CalendarDays, TrendingUp, PackageSearch, BookOpen, ShoppingCart, LogOut, User, Pencil, Trash2, AlertTriangle } from "lucide-react";
 import ClearedBills   from "./ClearedBills";
 import MenuQR         from "./MenuQR";
 import UserManagement from "./UserManagement";
@@ -57,25 +58,25 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
   };
 
   const tabs = [
-    { id:"products",   label:"📦 Products" },
-    { id:"categories", label:"🏷️ Categories" },
-    { id:"sales",      label:"📊 Sales" },
-    { id:"cleared",    label:"✅ Cleared" },
-    { id:"users",      label:"👥 Users" },
-    { id:"report",     label:"📊 Daily" },
-    { id:"chart",      label:"📈 Revenue" },
-    { id:"lowstock",   label: lowCount > 0 ? `⚠️ Stock (${lowCount})` : "⚠️ Stock" },
-    { id:"menu",       label:"📋 Menu" },
+    { id:"products",   label:<><Package size={14}/> Products</> },
+    { id:"categories", label:<><Tags size={14}/> Categories</> },
+    { id:"sales",      label:<><BarChart3 size={14}/> Sales</> },
+    { id:"cleared",    label:<><CheckCircle2 size={14}/> Cleared</> },
+    { id:"users",      label:<><Users size={14}/> Users</> },
+    { id:"report",     label:<><CalendarDays size={14}/> Daily</> },
+    { id:"chart",      label:<><TrendingUp size={14}/> Revenue</> },
+    { id:"lowstock",   label: lowCount > 0 ? <><AlertTriangle size={14}/> Stock ({lowCount})</> : <><AlertTriangle size={14}/> Stock</> },
+    { id:"menu",       label:<><BookOpen size={14}/> Menu</> },
   ];
 
   return (
     <div className="page">
       <div className="header">
-        <h2>⚙️ Admin — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--accent-hi)"}}>Vendaura</span></h2>
+        <h2><Settings size={19}/> Admin — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--accent-hi)"}}>Vendaura</span></h2>
         <div className="header-right">
-          <span className="header-user">👤 {user.name}</span>
-          {onSwitchToPOS && <button className="btn btn-success btn-sm" onClick={onSwitchToPOS}>🛒 POS</button>}
-          <button className="btn btn-danger btn-sm" onClick={onLogout}>Logout</button>
+          <span className="header-user" style={{display:"inline-flex",alignItems:"center",gap:"5px"}}><User size={12}/> {user.name}</span>
+          {onSwitchToPOS && <button className="btn btn-success btn-sm" onClick={onSwitchToPOS}><ShoppingCart size={13}/> POS</button>}
+          <button className="btn btn-danger btn-sm" onClick={onLogout}><LogOut size={13}/> Logout</button>
         </div>
       </div>
       <div className="tabs">
@@ -100,7 +101,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
           </div>
           {editProduct && (
             <div className="card" style={{border:"1px solid var(--accent)"}}>
-              <div className="section-title" style={{padding:0,marginBottom:"12px"}}>✏️ Edit Product</div>
+              <div className="section-title" style={{padding:0,marginBottom:"12px",display:"flex",alignItems:"center",gap:"6px"}}><Pencil size={15}/> Edit Product</div>
               <input className="input" value={editProduct.name}  onChange={e => setEditProduct({...editProduct,name:e.target.value})} />
               <input className="input" type="number" value={editProduct.price} onChange={e => setEditProduct({...editProduct,price:e.target.value})} />
               <input className="input" type="number" value={editProduct.stock} onChange={e => setEditProduct({...editProduct,stock:e.target.value})} />
@@ -121,8 +122,8 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
                 <div className="admin-item-sub">KSh {p.price} | Stock: {p.stock} | {categories.find(c=>c.id===p.category_id)?.name||"No category"}</div>
               </div>
               <div className="admin-item-actions">
-                <button className="btn btn-ghost btn-sm"  onClick={() => setEditProduct(p)}>✏️</button>
-                <button className="btn btn-danger btn-sm" onClick={() => deleteProduct(p.id)}>🗑️</button>
+                <button className="btn btn-ghost btn-sm"  onClick={() => setEditProduct(p)}><Pencil size={13}/></button>
+                <button className="btn btn-danger btn-sm" onClick={() => deleteProduct(p.id)}><Trash2 size={13}/></button>
               </div>
             </div>
           ))}

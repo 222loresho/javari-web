@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import api from "./api";
+import { Store, CheckCircle2, RefreshCw, Pause, Banknote, TrendingUp, CalendarDays, CalendarClock, ReceiptText, BarChart3, Crown, Settings, Users, UserRound, UserPlus, Pencil, CreditCard, Play, ChevronUp, ChevronDown, Trash2, X, Plus, StickyNote } from "lucide-react";
 
 /* ── Constants ──────────────────────────────────────────────────────────── */
 const PLANS    = ["trial","basic","pro","enterprise"];
@@ -12,9 +13,9 @@ const PLAN_META = {
   enterprise: { color:"#c9a84c", bg:"rgba(201,168,76,0.15)",  label:"Enterprise" },
 };
 const STATUS_META = {
-  trial:     { color:"#94a3b8", bg:"rgba(148,163,184,0.1)",  icon:"🔄" },
-  active:    { color:"#4ade80", bg:"rgba(74,222,128,0.1)",   icon:"✅" },
-  suspended: { color:"#f87171", bg:"rgba(248,113,113,0.1)",  icon:"⏸️" },
+  trial:     { color:"#94a3b8", bg:"rgba(148,163,184,0.1)",  icon:<RefreshCw size={11}/> },
+  active:    { color:"#4ade80", bg:"rgba(74,222,128,0.1)",   icon:<CheckCircle2 size={11}/> },
+  suspended: { color:"#f87171", bg:"rgba(248,113,113,0.1)",  icon:<Pause size={11}/> },
 };
 
 /* ── Health Score ───────────────────────────────────────────────────────── */
@@ -105,7 +106,7 @@ function AreaChart({ data, color="#c9a84c", height=80 }) {
 }
 
 /* ── KPI Card ───────────────────────────────────────────────────────────── */
-function KPICard({ icon, label, value, sub, color="#c9a84c", delay=0 }) {
+function KPICard({ icon:Icon, label, value, sub, color="#c9a84c", delay=0 }) {
   return (
     <div style={{
       background:"linear-gradient(135deg,#0d1117 0%,#0a0e0b 100%)",
@@ -114,8 +115,8 @@ function KPICard({ icon, label, value, sub, color="#c9a84c", delay=0 }) {
       animation:`kpiIn 0.5s ease ${delay}s both`,
       position:"relative", overflow:"hidden",
     }}>
-      <div style={{position:"absolute",top:"-20px",right:"-10px",fontSize:"52px",opacity:"0.06"}}>{icon}</div>
-      <div style={{fontSize:"22px",marginBottom:"8px"}}>{icon}</div>
+      <div style={{position:"absolute",top:"-12px",right:"-8px",opacity:"0.07"}}><Icon size={56}/></div>
+      <div style={{marginBottom:"8px",color:"#5c5870"}}><Icon size={22}/></div>
       <div style={{fontSize:"10px",color:"#5c5870",textTransform:"uppercase",letterSpacing:"1.5px",marginBottom:"6px"}}>{label}</div>
       <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"26px",fontWeight:"700",color,lineHeight:1}}>{value}</div>
       {sub && <div style={{fontSize:"11px",color:"#5c5870",marginTop:"6px"}}>{sub}</div>}
@@ -165,19 +166,19 @@ export default function SuperAdmin({ user, onLogout }) {
     try {
       if (editItem) await api.put(`/superadmin/markets/${editItem.id}`, form);
       else          await api.post("/superadmin/markets", form);
-      toast(`✅ Market ${editItem?"updated":"created"}!`);
+      toast(`Market ${editItem?"updated":"created"}!`);
       setShowForm(false); setEditItem(null); setForm(blankMarket()); fetchAll();
     } catch(e) { toast(e.response?.data?.error||"Failed","error"); }
   };
 
   const deleteMarket = async (id) => {
     if (!window.confirm("Delete this market? This cannot be undone.")) return;
-    try { await api.delete(`/superadmin/markets/${id}`); toast("✅ Deleted!"); fetchAll(); }
+    try { await api.delete(`/superadmin/markets/${id}`); toast("Deleted!"); fetchAll(); }
     catch(e) { toast(e.response?.data?.error||"Failed","error"); }
   };
 
   const quickStatus = async (m, status) => {
-    try { await api.put(`/superadmin/markets/${m.id}`, { status }); toast(`✅ ${m.name} → ${status}`); fetchAll(); }
+    try { await api.put(`/superadmin/markets/${m.id}`, { status }); toast(`${m.name} → ${status}`); fetchAll(); }
     catch { toast("Failed","error"); }
   };
 
@@ -190,7 +191,7 @@ export default function SuperAdmin({ user, onLogout }) {
         next_payment: nextDate.toISOString().split("T")[0],
         status: "active",
       });
-      toast(`✅ Payment recorded — ${m.name} active until ${nextDate.toLocaleDateString("en-KE",{day:"numeric",month:"short"})}`);
+      toast(`Payment recorded — ${m.name} active until ${nextDate.toLocaleDateString("en-KE",{day:"numeric",month:"short"})}`);
       fetchAll();
     } catch { toast("Failed","error"); }
   };
@@ -205,7 +206,7 @@ export default function SuperAdmin({ user, onLogout }) {
     if (userForm.pin.length!==4||!/^\d{4}$/.test(userForm.pin)) return toast("PIN must be 4 digits","error");
     try {
       await api.post("/superadmin/users", userForm);
-      toast("✅ User created!"); setShowUForm(false);
+      toast("User created!"); setShowUForm(false);
       setUserForm({ name:"",username:"",pin:"",role:"admin" }); fetchAll();
     } catch(e) { toast(e.response?.data?.error||"Failed","error"); }
   };
@@ -231,18 +232,18 @@ export default function SuperAdmin({ user, onLogout }) {
   const fmtMoney     = (n, cur="KES") => `${cur} ${Number(n||0).toLocaleString()}`;
 
   const ROLE_META = {
-    super_admin:{ color:"#c9a84c", label:"Super Admin", icon:"👑" },
-    admin:      { color:"#f87171", label:"Admin",       icon:"⚙️" },
-    cashier:    { color:"#4ade80", label:"Cashier",     icon:"💰" },
-    waiter:     { color:"#818cf8", label:"Waiter",      icon:"🤵" },
+    super_admin:{ color:"#c9a84c", label:"Super Admin", icon:<Crown size={18}/> },
+    admin:      { color:"#f87171", label:"Admin",       icon:<Settings size={18}/> },
+    cashier:    { color:"#4ade80", label:"Cashier",     icon:<Banknote size={18}/> },
+    waiter:     { color:"#818cf8", label:"Waiter",      icon:<UserRound size={18}/> },
   };
 
   /* ── Sidebar tabs ───────────────────────────────────────────────────── */
   const NAV = [
-    { id:"dashboard", icon:"📊", label:"Dashboard" },
-    { id:"markets",   icon:"🏪", label:"Markets",   badge: markets.length },
-    { id:"analytics", icon:"📈", label:"Analytics" },
-    { id:"users",     icon:"👥", label:"Users",     badge: users.length },
+    { id:"dashboard", icon:<BarChart3 size={16}/>,  label:"Dashboard" },
+    { id:"markets",   icon:<Store size={16}/>,      label:"Markets",   badge: markets.length },
+    { id:"analytics", icon:<TrendingUp size={16}/>, label:"Analytics" },
+    { id:"users",     icon:<Users size={16}/>,      label:"Users",     badge: users.length },
   ];
 
   /* ── Render ─────────────────────────────────────────────────────────── */
@@ -279,8 +280,8 @@ export default function SuperAdmin({ user, onLogout }) {
           {/* Logo */}
           <div style={{padding:"24px 20px 20px",borderBottom:"1px solid rgba(201,168,76,0.08)"}}>
             <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"4px"}}>
-              <div style={{width:"32px",height:"32px",borderRadius:"50%",background:"linear-gradient(135deg,#c9a84c,#8a6a28)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px",flexShrink:0}}>
-                👑
+              <div style={{width:"32px",height:"32px",borderRadius:"50%",background:"linear-gradient(135deg,#c9a84c,#8a6a28)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <Crown size={15} color="#0a0e0b"/>
               </div>
               <div>
                 <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"16px",fontWeight:"700",color:"#c9a84c",letterSpacing:"1px",lineHeight:1}}>VENDAURA</div>
@@ -349,12 +350,12 @@ export default function SuperAdmin({ user, onLogout }) {
 
               {/* KPI Grid */}
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:"12px",marginBottom:"24px"}}>
-                <KPICard icon="🏪" label="Total Markets"  value={dashboard?.markets.total||0}        color="#c9a84c" delay={0}/>
-                <KPICard icon="✅" label="Active"         value={dashboard?.markets.active||0}        color="#4ade80" delay={0.05}/>
-                <KPICard icon="🔄" label="Trial"          value={dashboard?.markets.trial||0}         color="#818cf8" delay={0.1}/>
-                <KPICard icon="⏸️" label="Suspended"      value={dashboard?.markets.suspended||0}     color="#f87171" delay={0.15}/>
-                <KPICard icon="💰" label="Monthly Sub Rev" value={`KES ${(totalSubRev||0).toLocaleString()}`} color="#c9a84c" delay={0.2}/>
-                <KPICard icon="📈" label="Today Sales"    value={`KES ${(dashboard?.sales.today_revenue||0).toLocaleString()}`} color="#4ade80" delay={0.25} sub={`${dashboard?.sales.today_count||0} transactions`}/>
+                <KPICard icon={Store} label="Total Markets"  value={dashboard?.markets.total||0}        color="#c9a84c" delay={0}/>
+                <KPICard icon={CheckCircle2} label="Active"         value={dashboard?.markets.active||0}        color="#4ade80" delay={0.05}/>
+                <KPICard icon={RefreshCw} label="Trial"          value={dashboard?.markets.trial||0}         color="#818cf8" delay={0.1}/>
+                <KPICard icon={Pause} label="Suspended"      value={dashboard?.markets.suspended||0}     color="#f87171" delay={0.15}/>
+                <KPICard icon={Banknote} label="Monthly Sub Rev" value={`KES ${(totalSubRev||0).toLocaleString()}`} color="#c9a84c" delay={0.2}/>
+                <KPICard icon={TrendingUp} label="Today Sales"    value={`KES ${(dashboard?.sales.today_revenue||0).toLocaleString()}`} color="#4ade80" delay={0.25} sub={`${dashboard?.sales.today_count||0} transactions`}/>
               </div>
 
               {/* Charts row */}
@@ -393,7 +394,7 @@ export default function SuperAdmin({ user, onLogout }) {
                     { value: dashboard?.markets.suspended||0, color:"#f87171" },
                   ]}/>
                   <div style={{marginTop:"12px",width:"100%"}}>
-                    {[["✅ Active","#4ade80",dashboard?.markets.active],["🔄 Trial","#818cf8",dashboard?.markets.trial],["⏸️ Suspended","#f87171",dashboard?.markets.suspended]].map(([l,c,v])=>(
+                    {[[<span key="a" style={{display:"inline-flex",alignItems:"center",gap:"4px"}}><CheckCircle2 size={11}/> Active</span>,"#4ade80",dashboard?.markets.active],[<span key="t" style={{display:"inline-flex",alignItems:"center",gap:"4px"}}><RefreshCw size={11}/> Trial</span>,"#818cf8",dashboard?.markets.trial],[<span key="s" style={{display:"inline-flex",alignItems:"center",gap:"4px"}}><Pause size={11}/> Suspended</span>,"#f87171",dashboard?.markets.suspended]].map(([l,c,v])=>(
                       <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"11px",marginBottom:"4px"}}>
                         <span style={{color:c}}>{l}</span>
                         <span style={{fontWeight:"700",color:"#e2e8f0"}}>{v||0}</span>
@@ -406,14 +407,14 @@ export default function SuperAdmin({ user, onLogout }) {
               {/* Upcoming renewals */}
               {dashboard?.upcoming?.length > 0 && (
                 <div style={{background:"rgba(201,168,76,0.05)",border:"1px solid rgba(201,168,76,0.2)",borderRadius:"14px",padding:"18px"}}>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"18px",color:"#c9a84c",marginBottom:"14px"}}>⏰ Payment Renewals Due</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"18px",color:"#c9a84c",marginBottom:"14px",display:"flex",alignItems:"center",gap:"8px"}}><CalendarClock size={16}/> Payment Renewals Due</div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:"10px"}}>
                     {dashboard.upcoming.map((p,i) => (
                       <div key={i} style={{background:"#0a0e0b",border:`1px solid ${p.days_left<=2?"rgba(248,113,113,0.3)":"rgba(201,168,76,0.15)"}`,borderRadius:"10px",padding:"12px"}}>
                         <div style={{fontWeight:"600",fontSize:"13px",marginBottom:"4px"}}>{p.market}</div>
                         <div style={{fontSize:"12px",color:"#c9a84c",fontWeight:"700",marginBottom:"2px"}}>KES {(p.amount||0).toLocaleString()}</div>
                         <div style={{fontSize:"11px",color:p.days_left<=2?"#f87171":p.days_left<=5?"#c9a84c":"#5c5870",animation:p.days_left===0?"pulse 1.5s infinite":"none"}}>
-                          {p.days_left===0?"🔴 Due TODAY":p.days_left===1?"🟡 Due TOMORROW":`🟢 Due in ${p.days_left} days`}
+                          {p.days_left===0?<span style={{display:"inline-flex",alignItems:"center",gap:"5px"}}><span style={{width:"7px",height:"7px",borderRadius:"50%",background:"#f87171",display:"inline-block",flexShrink:0}}/> Due TODAY</span>:p.days_left===1?<span style={{display:"inline-flex",alignItems:"center",gap:"5px"}}><span style={{width:"7px",height:"7px",borderRadius:"50%",background:"#c9a84c",display:"inline-block",flexShrink:0}}/> Due TOMORROW</span>:<span style={{display:"inline-flex",alignItems:"center",gap:"5px"}}><span style={{width:"7px",height:"7px",borderRadius:"50%",background:"#4ade80",display:"inline-block",flexShrink:0}}/> Due in {p.days_left} days</span>}
                         </div>
                       </div>
                     ))}
@@ -433,14 +434,14 @@ export default function SuperAdmin({ user, onLogout }) {
                 </div>
                 <button className="sa-btn" onClick={() => { setEditItem(null); setForm(blankMarket()); setShowForm(!showForm); }}
                   style={{background:"rgba(201,168,76,0.15)",color:"#c9a84c",border:"1px solid rgba(201,168,76,0.3)"}}>
-                  {showForm&&!editItem?"✕ Cancel":"+ Add Market"}
+                  {showForm&&!editItem?<><X size={12}/> Cancel</>:<><Plus size={12}/> Add Market</>}
                 </button>
               </div>
 
               {/* Market Form */}
               {showForm && (
                 <div style={{background:"#0d1117",border:"1px solid rgba(201,168,76,0.25)",borderRadius:"14px",padding:"20px",marginBottom:"20px",animation:"fadeSlide 0.3s ease"}}>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#c9a84c",marginBottom:"16px"}}>{editItem?"✏️ Edit Market":"➕ New Market"}</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#c9a84c",marginBottom:"16px",display:"flex",alignItems:"center",gap:"8px"}}>{editItem?<><Pencil size={15}/> Edit Market</>:<><Plus size={15}/> New Market</>}</div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 12px"}}>
                     <input className="sa-input" style={{gridColumn:"1/-1"}} placeholder="Restaurant / Business name *" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
                     <input className="sa-input" placeholder="City / Location" value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/>
@@ -469,7 +470,7 @@ export default function SuperAdmin({ user, onLogout }) {
 
               {/* Search + filters */}
               <div style={{display:"flex",gap:"10px",marginBottom:"16px",flexWrap:"wrap"}}>
-                <input className="sa-input" style={{flex:1,minWidth:"180px",marginBottom:0}} placeholder="🔍 Search markets..." value={search} onChange={e=>setSearch(e.target.value)}/>
+                <input className="sa-input" style={{flex:1,minWidth:"180px",marginBottom:0}} placeholder="Search markets..." value={search} onChange={e=>setSearch(e.target.value)}/>
                 <select className="sa-input" style={{marginBottom:0,width:"auto"}} value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}>
                   <option value="all">All Status</option>
                   {STATUSES.map(s=><option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>)}
@@ -488,7 +489,7 @@ export default function SuperAdmin({ user, onLogout }) {
 
               {filteredMarkets.length===0 && (
                 <div style={{textAlign:"center",padding:"48px",color:"#5c5870"}}>
-                  <div style={{fontSize:"40px",marginBottom:"12px"}}>🏪</div>
+                  <div style={{marginBottom:"12px",display:"flex",justifyContent:"center",color:"#5c5870"}}><Store size={40}/></div>
                   <div style={{fontSize:"15px",fontWeight:"600",color:"#94a3b8"}}>No markets found</div>
                   <div style={{fontSize:"12px",marginTop:"4px"}}>{search?"Try a different search":"Add your first market above"}</div>
                 </div>
@@ -548,19 +549,19 @@ export default function SuperAdmin({ user, onLogout }) {
 
                     {/* Notes */}
                     {expanded===m.id && m.notes && (
-                      <div style={{background:"rgba(201,168,76,0.04)",border:"1px solid rgba(201,168,76,0.1)",borderRadius:"8px",padding:"10px",marginBottom:"12px",fontSize:"12px",color:"#94a3b8"}}>
-                        📝 {m.notes}
+                      <div style={{background:"rgba(201,168,76,0.04)",border:"1px solid rgba(201,168,76,0.1)",borderRadius:"8px",padding:"10px",marginBottom:"12px",fontSize:"12px",color:"#94a3b8",display:"flex",alignItems:"flex-start",gap:"6px"}}>
+                        <StickyNote size={12} style={{flexShrink:0,marginTop:"2px"}}/> {m.notes}
                       </div>
                     )}
 
                     {/* Actions */}
                     <div style={{display:"flex",gap:"8px",flexWrap:"wrap",alignItems:"center"}}>
-                      <button className="sa-btn" onClick={()=>startEdit(m)} style={{background:"rgba(255,255,255,0.04)",color:"#94a3b8",border:"1px solid rgba(255,255,255,0.08)"}}>✏️ Edit</button>
-                      <button className="sa-btn" onClick={()=>recordPayment(m)} style={{background:"rgba(201,168,76,0.1)",color:"#c9a84c",border:"1px solid rgba(201,168,76,0.25)"}}>💳 Record Payment</button>
-                      {m.status!=="active"    && <button className="qbtn" onClick={()=>quickStatus(m,"active")}    style={{background:"rgba(74,222,128,0.1)",color:"#4ade80",borderColor:"rgba(74,222,128,0.2)"}}>✅ Activate</button>}
-                      {m.status!=="suspended" && <button className="qbtn" onClick={()=>quickStatus(m,"suspended")} style={{background:"rgba(248,113,113,0.1)",color:"#f87171",borderColor:"rgba(248,113,113,0.2)"}}>⏸ Suspend</button>}
-                      {m.notes && <button className="qbtn" onClick={()=>setExpanded(expanded===m.id?null:m.id)} style={{background:"rgba(255,255,255,0.04)",color:"#5c5870",borderColor:"rgba(255,255,255,0.08)"}}>{expanded===m.id?"▲":"▼"} Notes</button>}
-                      <button className="qbtn" onClick={()=>deleteMarket(m.id)} style={{marginLeft:"auto",background:"rgba(248,113,113,0.08)",color:"#f87171",borderColor:"rgba(248,113,113,0.15)"}}>🗑️ Delete</button>
+                      <button className="sa-btn" onClick={()=>startEdit(m)} style={{background:"rgba(255,255,255,0.04)",color:"#94a3b8",border:"1px solid rgba(255,255,255,0.08)"}}><Pencil size={12}/> Edit</button>
+                      <button className="sa-btn" onClick={()=>recordPayment(m)} style={{background:"rgba(201,168,76,0.1)",color:"#c9a84c",border:"1px solid rgba(201,168,76,0.25)"}}><CreditCard size={12}/> Record Payment</button>
+                      {m.status!=="active"    && <button className="qbtn" onClick={()=>quickStatus(m,"active")}    style={{background:"rgba(74,222,128,0.1)",color:"#4ade80",borderColor:"rgba(74,222,128,0.2)"}}><CheckCircle2 size={12}/> Activate</button>}
+                      {m.status!=="suspended" && <button className="qbtn" onClick={()=>quickStatus(m,"suspended")} style={{background:"rgba(248,113,113,0.1)",color:"#f87171",borderColor:"rgba(248,113,113,0.2)"}}><Pause size={12}/> Suspend</button>}
+                      {m.notes && <button className="qbtn" onClick={()=>setExpanded(expanded===m.id?null:m.id)} style={{background:"rgba(255,255,255,0.04)",color:"#5c5870",borderColor:"rgba(255,255,255,0.08)"}}>{expanded===m.id?<ChevronUp size={11}/>:<ChevronDown size={11}/>} Notes</button>}
+                      <button className="qbtn" onClick={()=>deleteMarket(m.id)} style={{marginLeft:"auto",background:"rgba(248,113,113,0.08)",color:"#f87171",borderColor:"rgba(248,113,113,0.15)"}}><Trash2 size={12}/> Delete</button>
                     </div>
                   </div>
                 );
@@ -577,10 +578,10 @@ export default function SuperAdmin({ user, onLogout }) {
               {/* Subscription Revenue Summary */}
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:"12px",marginBottom:"24px"}}>
                 {[
-                  { label:"Annual Sub Revenue (projected)", value:`KES ${(totalSubRev*12).toLocaleString()}`, icon:"📅", color:"#c9a84c" },
-                  { label:"Avg Fee Per Market",  value: markets.filter(m=>m.status==="active").length ? `KES ${Math.round(totalSubRev/markets.filter(m=>m.status==="active").length).toLocaleString()}` : "—", icon:"💰", color:"#4ade80" },
-                  { label:"Month Sales Revenue", value:`KES ${(dashboard?.sales.month_revenue||0).toLocaleString()}`, icon:"📊", color:"#818cf8" },
-                  { label:"Today Transactions",  value: dashboard?.sales.today_count||0, icon:"🧾", color:"#c9a84c" },
+                  { label:"Annual Sub Revenue (projected)", value:`KES ${(totalSubRev*12).toLocaleString()}`, icon:CalendarDays, color:"#c9a84c" },
+                  { label:"Avg Fee Per Market",  value: markets.filter(m=>m.status==="active").length ? `KES ${Math.round(totalSubRev/markets.filter(m=>m.status==="active").length).toLocaleString()}` : "—", icon:Banknote, color:"#4ade80" },
+                  { label:"Month Sales Revenue", value:`KES ${(dashboard?.sales.month_revenue||0).toLocaleString()}`, icon:BarChart3, color:"#818cf8" },
+                  { label:"Today Transactions",  value: dashboard?.sales.today_count||0, icon:ReceiptText, color:"#c9a84c" },
                 ].map((k,i) => <KPICard key={i} {...k} delay={i*0.05}/>)}
               </div>
 
@@ -636,13 +637,13 @@ export default function SuperAdmin({ user, onLogout }) {
                   <div style={{fontSize:"13px",color:"#5c5870"}}>{users.length} total system users</div>
                 </div>
                 <button className="sa-btn" onClick={()=>setShowUForm(!showUForm)} style={{background:"rgba(201,168,76,0.15)",color:"#c9a84c",border:"1px solid rgba(201,168,76,0.3)"}}>
-                  {showUForm?"✕ Cancel":"+ Add User"}
+                  {showUForm?<><X size={12}/> Cancel</>:<><UserPlus size={12}/> Add User</>}
                 </button>
               </div>
 
               {showUForm && (
                 <div style={{background:"#0d1117",border:"1px solid rgba(201,168,76,0.25)",borderRadius:"14px",padding:"20px",marginBottom:"20px",animation:"fadeSlide 0.3s ease"}}>
-                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#c9a84c",marginBottom:"16px"}}>➕ New User</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#c9a84c",marginBottom:"16px",display:"flex",alignItems:"center",gap:"8px"}}><UserPlus size={15}/> New User</div>
                   <input className="sa-input" placeholder="Full Name" value={userForm.name} onChange={e=>setUserForm({...userForm,name:e.target.value})}/>
                   <input className="sa-input" placeholder="Username (lowercase)" value={userForm.username} onChange={e=>setUserForm({...userForm,username:e.target.value.toLowerCase()})}/>
                   <input className="sa-input" type="number" placeholder="4-digit PIN" maxLength={4} value={userForm.pin} onChange={e=>setUserForm({...userForm,pin:e.target.value.slice(0,4)})}/>
@@ -661,7 +662,7 @@ export default function SuperAdmin({ user, onLogout }) {
 
               <div style={{display:"grid",gap:"10px"}}>
                 {users.map(u => {
-                  const rm = ROLE_META[u.role]||{ color:"#5c5870",label:u.role,icon:"👤" };
+                  const rm = ROLE_META[u.role]||{ color:"#5c5870",label:u.role,icon:<UserRound size={18}/> };
                   return (
                     <div key={u.id} style={{background:"#0a0e0b",border:"1px solid rgba(201,168,76,0.1)",borderRadius:"12px",padding:"14px 16px",display:"flex",alignItems:"center",gap:"14px",opacity:u.active?1:0.5}}>
                       <div style={{width:"40px",height:"40px",borderRadius:"50%",background:`${rm.color}18`,border:`1px solid ${rm.color}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"18px",flexShrink:0}}>

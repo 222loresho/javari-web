@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
+import { TriangleAlert, CheckCircle2 } from "lucide-react";
 
 export default function LowStock({ onCount }) {
   const [items,     setItems]     = useState([]);
@@ -20,13 +21,13 @@ export default function LowStock({ onCount }) {
   return (
     <div style={{padding:"14px"}}>
       <div className="flex-between" style={{marginBottom:"16px"}}>
-        <div className="section-title" style={{padding:0,margin:0}}>⚠️ Low Stock Alert</div>
+        <div className="section-title" style={{padding:0,margin:0}}><TriangleAlert size={16}/> Low Stock Alert</div>
         <select className="input" style={{margin:0,width:"auto"}} value={threshold} onChange={e => setThreshold(Number(e.target.value))}>
           {[5,10,15,20].map(n => <option key={n} value={n}>Below {n}</option>)}
         </select>
       </div>
-      {items.length===0 && <div className="empty-state"><div className="empty-icon">✅</div><div className="empty-text">All products well stocked</div></div>}
-      {items.length>0 && <div className="card" style={{background:"rgba(220,38,38,0.08)",border:"1px solid var(--red)",marginBottom:"16px"}}><span style={{color:"var(--red)",fontWeight:"bold"}}>⚠️ {items.length} product(s) running low!</span></div>}
+      {items.length===0 && <div className="empty-state"><div className="empty-icon"><CheckCircle2 size={28}/></div><div className="empty-text">All products well stocked</div></div>}
+      {items.length>0 && <div className="card" style={{background:"rgba(220,38,38,0.08)",border:"1px solid var(--red)",marginBottom:"16px"}}><span style={{color:"var(--red)",fontWeight:"bold",display:"inline-flex",alignItems:"center",gap:"6px"}}><TriangleAlert size={14}/> {items.length} product(s) running low!</span></div>}
       {items.map(p => (
         <div key={p.id} className="admin-item">
           <div>

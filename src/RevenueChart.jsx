@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
+import { TrendingUp, RefreshCw, BarChart3 } from "lucide-react";
 
 export default function RevenueChart() {
   const [data,    setData]    = useState(null);
@@ -58,8 +59,8 @@ export default function RevenueChart() {
   return (
     <div style={{padding:"14px"}}>
       <div className="flex-between" style={{marginBottom:"16px"}}>
-        <div className="section-title" style={{padding:0,margin:0}}>📈 Revenue Chart</div>
-        <button className="btn btn-ghost btn-sm" onClick={fetchData}>🔄</button>
+        <div className="section-title" style={{padding:0,margin:0}}><TrendingUp size={16}/> Revenue Chart</div>
+        <button className="btn btn-ghost btn-sm" onClick={fetchData}><RefreshCw size={14}/></button>
       </div>
       <div className="tabs" style={{marginBottom:"12px",padding:0}}>
         {[["daily","Today"],["weekly","7 Days"],["monthly","30 Days"],["yearly","12 Months"]].map(([p,l]) => (
@@ -84,7 +85,7 @@ export default function RevenueChart() {
           </div>
           <div className="card card-dark">
             {data.data.every(d=>d.revenue===0)
-              ? <div className="empty-state"><div className="empty-icon">📊</div><div className="empty-text">No revenue data</div></div>
+              ? <div className="empty-state"><div className="empty-icon"><BarChart3 size={28}/></div><div className="empty-text">No revenue data</div></div>
               : renderChart()}
           </div>
         </>

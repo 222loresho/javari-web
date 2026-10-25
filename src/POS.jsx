@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import api from "./api";
+import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search } from "lucide-react";
 
 
 /* ── SplitFields — standalone to prevent re-render keypad loss ─────────── */
@@ -24,24 +25,24 @@ function SplitFields({ splits, setSplits, orderTotal }) {
               value={split.amount}
               onChange={e => setSplits(splits.map((s,i) => i===idx?{...s,amount:e.target.value}:s))}/>
             {splits.length > 1 && (
-              <button className="btn-icon-sm" onClick={() => setSplits(splits.filter((_,i)=>i!==idx))}>✕</button>
+              <button className="btn-icon-sm" onClick={() => setSplits(splits.filter((_,i)=>i!==idx))}><X size={15}/></button>
             )}
           </div>
           {split.method==="mpesa" && (
             <input className="input" style={{margin:0,marginTop:"6px"}}
-              placeholder="📱 Mpesa transaction code"
+              placeholder="Mpesa transaction code"
               value={split.ref}
               onChange={e => setSplits(splits.map((s,i) => i===idx?{...s,ref:e.target.value.toUpperCase()}:s))}/>
           )}
           {split.method==="card" && (
             <input className="input" style={{margin:0,marginTop:"6px"}}
-              placeholder="💳 Card auth number"
+              placeholder="Card auth number"
               value={split.ref}
               onChange={e => setSplits(splits.map((s,i) => i===idx?{...s,ref:e.target.value.toUpperCase()}:s))}/>
           )}
           {split.method==="billout" && (
             <input className="input" style={{margin:0,marginTop:"6px"}}
-              placeholder="📋 Billout reference"
+              placeholder="Billout reference"
               value={split.ref}
               onChange={e => setSplits(splits.map((s,i) => i===idx?{...s,ref:e.target.value.toUpperCase()}:s))}/>
           )}
@@ -53,8 +54,8 @@ function SplitFields({ splits, setSplits, orderTotal }) {
       </button>
       <div className="split-total">
         Paid: <strong style={{color:paid>=orderTotal?"var(--green)":"var(--red)"}}>KSh {paid}</strong> / KSh {orderTotal}
-        {change > 0 && <span style={{marginLeft:"10px",color:"var(--green)",fontWeight:"700"}}>↩ Change: KSh {change.toFixed(0)}</span>}
-        {paid > 0 && change < 0 && <span style={{marginLeft:"10px",color:"var(--red)",fontWeight:"700"}}>⚠ Short: KSh {short.toFixed(0)}</span>}
+        {change > 0 && <span style={{marginLeft:"10px",color:"var(--green)",fontWeight:"700"}}>Change: KSh {change.toFixed(0)}</span>}
+        {paid > 0 && change < 0 && <span style={{marginLeft:"10px",color:"var(--red)",fontWeight:"700",display:"inline-flex",alignItems:"center",gap:"4px"}}><AlertTriangle size={12}/> Short: KSh {short.toFixed(0)}</span>}
       </div>
     </div>
   );
@@ -362,21 +363,21 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   return (
     <div className="page">
       <div className="header">
-        <h2>🛒 POS — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--accent-hi)"}}>Vendaura</span></h2>
+        <h2><ShoppingCart size={19}/> POS — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--accent-hi)"}}>Vendaura</span></h2>
         <div className="header-right">
-          <span className="header-user">👤 {user.name}</span>
-          {onSwitchToBills && <button className="btn btn-ghost btn-sm" onClick={onSwitchToBills}>💰 Bills</button>}
-          <button className="btn btn-danger btn-sm" onClick={onLogout}>Logout</button>
+          <span className="header-user" style={{display:"inline-flex",alignItems:"center",gap:"5px"}}><User size={12}/> {user.name}</span>
+          {onSwitchToBills && <button className="btn btn-ghost btn-sm" onClick={onSwitchToBills}><ReceiptText size={13}/> Bills</button>}
+          <button className="btn btn-danger btn-sm" onClick={onLogout}><LogOut size={13}/> Logout</button>
         </div>
       </div>
 
       <div className="nav-tabs">
-        <button className={`nav-tab ${view==="sales"?"active":""}`} onClick={() => setView("sales")}>🛒 Sales</button>
+        <button className={`nav-tab ${view==="sales"?"active":""}`} onClick={() => setView("sales")}><ShoppingCart size={14}/> Sales</button>
         <button className={`nav-tab ${view==="tables"?"active":""}`} onClick={() => { setView("tables"); fetchOrders(); }}>
-          🪑 Tables {pendingOrders.length > 0 && <span className="nav-badge">{pendingOrders.length}</span>}
+          <Armchair size={14}/> Tables {pendingOrders.length > 0 && <span className="nav-badge">{pendingOrders.length}</span>}
         </button>
         <button className={`nav-tab ${view==="bills"?"active":""}`} onClick={() => { setView("bills"); fetchOrders(); }}>
-          💰 Bills {submittedOrders.length > 0 && <span className="nav-badge">{submittedOrders.length}</span>}
+          <ReceiptText size={14}/> Bills {submittedOrders.length > 0 && <span className="nav-badge">{submittedOrders.length}</span>}
         </button>
       </div>
 
@@ -390,7 +391,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         <div className="tables-view">
           {pendingOrders.length === 0 && !showTableEdit ? (
             <div className="empty-state">
-              <div className="empty-icon">🪑</div>
+              <div className="empty-icon"><Armchair size={40} strokeWidth={1.4}/></div>
               <div className="empty-text">No active tables</div>
               <div className="empty-sub">Go to Sales to start a new order</div>
             </div>
@@ -404,11 +405,11 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                   </div>
                   <div className="filter-bubbles">
                     <button className={`bubble ${selectedWaiter==="all"?"bubble-active":""}`} onClick={() => setSelectedWaiter("all")}>
-                      👥 All ({pendingOrders.length})
+                      <Users size={13}/> All ({pendingOrders.length})
                     </button>
                     {[...new Set(pendingOrders.map(o => o.waiter_name))].map(w => (
                       <button key={w} className={`bubble ${selectedWaiter===w?"bubble-active":""}`} onClick={() => setSelectedWaiter(w)}>
-                        👤 {w} ({pendingOrders.filter(o => o.waiter_name===w).length})
+                        <User size={13}/> {w} ({pendingOrders.filter(o => o.waiter_name===w).length})
                       </button>
                     ))}
                   </div>
@@ -424,8 +425,8 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                             </div>
                           </div>
                           <div className="table-meta">
-                            <span>👤 {o.waiter_name}</span>
-                            <span>🕐 {new Date(o.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</span>
+                            <span><User size={11}/> {o.waiter_name}</span>
+                            <span><Clock size={11}/> {new Date(o.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</span>
                           </div>
                           <div className="table-meta">
                             <span>{o.items?.length||0} items</span>
@@ -433,8 +434,8 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                           </div>
                         </div>
                         <div className="table-actions">
-                          <button className="tbl-btn tbl-btn-bill"   onClick={e => { e.stopPropagation(); printBill(o); }}>🧾 Bill</button>
-                          <button className="tbl-btn tbl-btn-submit" onClick={e => { e.stopPropagation(); loadOrder(o); setShowPayModal(true); }}>💳 Submit</button>
+                          <button className="tbl-btn tbl-btn-bill"   onClick={e => { e.stopPropagation(); printBill(o); }}><Printer size={13}/> Bill</button>
+                          <button className="tbl-btn tbl-btn-submit" onClick={e => { e.stopPropagation(); loadOrder(o); setShowPayModal(true); }}><CreditCard size={13}/> Submit</button>
                         </div>
                       </div>
                     ))}
@@ -444,8 +445,8 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
               {showTableEdit && activeOrder && (
                 <div className="edit-panel">
                   <div className="edit-panel-header">
-                    <span>✏️ {activeOrder.table_name} — {activeOrder.order_number}</span>
-                    <button className="btn-icon" onClick={clearActiveOrder}>✕</button>
+                    <span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><Pencil size={14}/> {activeOrder.table_name} — {activeOrder.order_number}</span>
+                    <button className="btn-icon" onClick={clearActiveOrder}><X size={15}/></button>
                   </div>
                   {cart.map(item => (
                     <div key={item.product_id} className="cart-item">
@@ -463,8 +464,8 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                   ))}
                   <div className="total-row"><span>Total</span><span className="total-amount">KSh {total}</span></div>
                   <div className="edit-actions">
-                    <button className="btn btn-success" style={{flex:1}} onClick={updateTable}>🔄 Update</button>
-                    <button className="btn btn-primary" style={{flex:1}} onClick={() => setShowPayModal(true)}>💳 Submit</button>
+                    <button className="btn btn-success" style={{flex:1}} onClick={updateTable}><RefreshCw size={14}/> Update</button>
+                    <button className="btn btn-primary" style={{flex:1}} onClick={() => setShowPayModal(true)}><CreditCard size={14}/> Submit</button>
                   </div>
                 </div>
               )}
@@ -476,12 +477,12 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       {view === "bills" && (
         <div className="bills-view">
           <div className="section-header">
-            <span className="section-title">💰 My Submitted Bills</span>
-            <button className="btn btn-ghost btn-sm" onClick={fetchOrders}>🔄 Refresh</button>
+            <span className="section-title">My Submitted Bills</span>
+            <button className="btn btn-ghost btn-sm" onClick={fetchOrders}><RefreshCw size={13}/> Refresh</button>
           </div>
           {submittedOrders.length === 0 && (
             <div className="empty-state">
-              <div className="empty-icon">📭</div>
+              <div className="empty-icon"><Inbox size={40} strokeWidth={1.4}/></div>
               <div className="empty-text">No submitted bills yet</div>
             </div>
           )}
@@ -497,13 +498,13 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                   <span className="bill-num">{o.order_number}</span>
                   <span className="bill-table">{o.table_name}</span>
                 </div>
-                <span className={`bill-badge ${o.status==="confirmed"?"badge-green":"badge-amber"}`}>
-                  {o.status === "confirmed" ? "✅ Confirmed" : "⏳ Awaiting"}
+                <span className={`bill-badge ${o.status==="confirmed"?"badge-green":"badge-amber"}`} style={{display:"inline-flex",alignItems:"center",gap:"4px"}}>
+                  {o.status === "confirmed" ? <><CheckCircle2 size={12}/> Confirmed</> : <><Clock size={12}/> Awaiting</>}
                 </span>
               </div>
               <div className="bill-amount">KSh {o.total}</div>
-              {o.status==="confirmed" && o.confirmed_by && <div className="bill-confirmed-by">✅ Confirmed by {o.confirmed_by}</div>}
-              {o.rejection_note && <div className="bill-rejected">❌ Rejected: {o.rejection_note}</div>}
+              {o.status==="confirmed" && o.confirmed_by && <div className="bill-confirmed-by" style={{display:"flex",alignItems:"center",gap:"4px"}}><CheckCircle2 size={12}/> Confirmed by {o.confirmed_by}</div>}
+              {o.rejection_note && <div className="bill-rejected" style={{display:"flex",alignItems:"center",gap:"4px"}}><XCircle size={12}/> Rejected: {o.rejection_note}</div>}
             </div>
           ))}
         </div>
@@ -513,7 +514,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         <div className="pos-layout">
           <div className="products-panel">
             <div className="search-bar">
-              <input className="input" placeholder="🔍 Search products..." value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:0}} />
+              <input className="input" placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:0}} />
               <select className="input" style={{marginBottom:0,width:"auto",minWidth:"110px"}} value={selectedCat} onChange={e => setSelectedCat(e.target.value)}>
                 <option value="">All Categories</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -522,7 +523,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
             <div className="product-grid">
               {filteredProducts.length === 0 && (
                 <div className="empty-state" style={{gridColumn:"1/-1"}}>
-                  <div className="empty-icon">🔍</div>
+                  <div className="empty-icon"><Search size={36} strokeWidth={1.4}/></div>
                   <div className="empty-text">No products found</div>
                 </div>
               )}
@@ -530,7 +531,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                 <div key={p.id} className="product-card" onClick={() => addToCart(p)}>
                   <div className="product-name">{p.name}</div>
                   <div className="product-price">KSh {p.price}</div>
-                  <div className="product-stock">Stock: {p.stock}</div>
+                  <div className="product-stock"><span className={`stock-dot ${p.stock===0?"stock-out":p.stock<=5?"stock-low":"stock-ok"}`}/> {p.stock===0?"Out of stock":`${p.stock} in stock`}</div>
                 </div>
               ))}
             </div>
@@ -539,15 +540,15 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
           <div className="cart-panel">
             {activeOrder && (
               <div className="active-order-banner">
-                <span>📋 {activeOrder.table_name} — {activeOrder.order_number}</span>
-                <button className="btn-icon" onClick={clearActiveOrder}>✕</button>
+                <span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><ClipboardList size={14}/> {activeOrder.table_name} — {activeOrder.order_number}</span>
+                <button className="btn-icon" onClick={clearActiveOrder}><X size={15}/></button>
               </div>
             )}
             <div className="cart-body">
               <div className="section-title" style={{padding:"14px 14px 0"}}>Cart</div>
               {cart.length === 0 && (
                 <div className="empty-state" style={{padding:"24px"}}>
-                  <div className="empty-icon" style={{fontSize:"32px"}}>🛒</div>
+                  <div className="empty-icon"><ShoppingCart size={34} strokeWidth={1.4}/></div>
                   <div className="empty-text" style={{fontSize:"13px"}}>Tap a product to add</div>
                 </div>
               )}
@@ -569,14 +570,14 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                     <button className="qty-btn" onClick={() => updateQty(item.product_id,+1)}>+</button>
                     <button className="btn-icon text-sm" style={{marginLeft:"auto",color:item.note?"var(--green)":"var(--muted)"}}
                       onClick={() => { setNoteModal(item.product_id); setNoteText(item.note||""); }}
-                      title="Add note">📝</button>
+                      title="Add note"><StickyNote size={14}/></button>
                     {(!activeOrder || user.role === "admin") && (
-                      <button className="btn-icon text-sm" onClick={() => removeFromCart(item.product_id)}>✕</button>
+                      <button className="btn-icon text-sm" onClick={() => removeFromCart(item.product_id)}><X size={15}/></button>
                     )}
                   </div>
                   {item.note && (
-                    <div style={{fontSize:"11px",color:"var(--green)",marginTop:"4px",fontStyle:"italic",paddingLeft:"2px"}}>
-                      📝 {item.note}
+                    <div style={{fontSize:"11px",color:"var(--green)",marginTop:"4px",fontStyle:"italic",paddingLeft:"2px",display:"flex",alignItems:"center",gap:"4px"}}>
+                      <StickyNote size={11}/> {item.note}
                     </div>
                   )}
                 </div>
@@ -588,16 +589,16 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                 <span className="total-amount">KSh {total}</span>
               </div>
               {!activeOrder ? (
-                <button className="btn btn-secondary full-btn mb" onClick={saveTable}>💾 Save Table</button>
+                <button className="btn btn-secondary full-btn mb" onClick={saveTable}><Save size={14}/> Save Table</button>
               ) : (
-                <button className="btn btn-outline-green full-btn mb" onClick={updateTable}>🔄 Update Table</button>
+                <button className="btn btn-outline-green full-btn mb" onClick={updateTable}><RefreshCw size={14}/> Update Table</button>
               )}
               {activeOrder ? (
-                <button className="btn btn-primary full-btn" onClick={() => setShowPayModal(true)}>💳 Submit Payment</button>
+                <button className="btn btn-primary full-btn" onClick={() => setShowPayModal(true)}><CreditCard size={14}/> Submit Payment</button>
               ) : (
                 <>
                   <SplitFields splits={splits} setSplits={setSplits} orderTotal={total} />
-                  <button className="btn btn-primary full-btn" onClick={handleCheckout}>✅ Complete Sale</button>
+                  <button className="btn btn-primary full-btn" onClick={handleCheckout}><BadgeCheck size={14}/> Complete Sale</button>
                 </>
               )}
             </div>
@@ -609,13 +610,13 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         <div className="modal-overlay">
           <div className="modal">
             <div className="modal-header">
-              <h3>💳 Submit Payment</h3>
-              <button className="btn-icon" onClick={() => { setShowPayModal(false); resetPayment(); setMessage(""); }}>✕</button>
+              <h3><CreditCard size={18}/> Submit Payment</h3>
+              <button className="btn-icon" onClick={() => { setShowPayModal(false); resetPayment(); setMessage(""); }}><X size={15}/></button>
             </div>
             <div className="modal-order-info">
               <span className="pill">{activeOrder.order_number}</span>
               <span className="pill">{activeOrder.table_name}</span>
-              <span className="pill">👤 {activeOrder.waiter_name}</span>
+              <span className="pill" style={{display:"inline-flex",alignItems:"center",gap:"4px"}}><User size={12}/> {activeOrder.waiter_name}</span>
             </div>
             <div className="modal-divider" />
             {activeOrder.items?.map(i => (
@@ -632,7 +633,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
             <SplitFields splits={splits} setSplits={setSplits} orderTotal={activeOrder.total} />
             {message && <div className="message message-error">{message}</div>}
             <div className="modal-actions">
-              <button className="btn btn-primary" style={{flex:1}} onClick={submitPayment}>💳 Submit</button>
+              <button className="btn btn-primary" style={{flex:1}} onClick={submitPayment}><CreditCard size={14}/> Submit</button>
               <button className="btn btn-ghost"   style={{flex:1}} onClick={() => { setShowPayModal(false); resetPayment(); setMessage(""); }}>Cancel</button>
             </div>
           </div>
@@ -658,15 +659,15 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
               <div className="receipt-row receipt-total-row"><span>TOTAL</span><span>KSh {receipt.total}</span></div>
               {receipt.splits?.map((s,i) => (
                 <div key={i} className="receipt-row">
-                  <span>{s.method==="mpesa"?"📱 Mpesa":s.method==="card"?"💳 Card":s.method==="billout"?"📋 Billout":"💵 Cash"}{s.ref?` (${s.ref})`:""}</span>
+                  <span>{s.method==="mpesa"?"Mpesa":s.method==="card"?"Card":s.method==="billout"?"Billout":"Cash"}{s.ref?` (${s.ref})`:""}</span>
                   <span>KSh {s.amount}</span>
                 </div>
               ))}
               <div className="receipt-divider" />
-              <div className="receipt-thanks">Thank you for visiting Vendaura 🙏</div>
+              <div className="receipt-thanks">Thank you for visiting Vendaura</div>
             </div>
             <div className="modal-actions" style={{marginTop:"16px"}}>
-              <button className="btn btn-dark" style={{flex:1}} onClick={printReceipt}>🖨️ Print</button>
+              <button className="btn btn-dark" style={{flex:1}} onClick={printReceipt}><Printer size={14}/> Print</button>
               <button className="btn btn-primary" style={{flex:1}} onClick={() => setReceipt(null)}>Close</button>
             </div>
           </div>
@@ -677,8 +678,8 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         <div className="modal-overlay">
           <div className="modal" style={{maxWidth:"360px"}}>
             <div className="modal-header">
-              <h3>📝 Item Note</h3>
-              <button className="btn-icon" onClick={() => { setNoteModal(null); setNoteText(""); }}>✕</button>
+              <h3><StickyNote size={18}/> Item Note</h3>
+              <button className="btn-icon" onClick={() => { setNoteModal(null); setNoteText(""); }}><X size={15}/></button>
             </div>
             <div style={{fontSize:"12px",color:"var(--muted)",marginBottom:"12px"}}>
               Add special instructions for this item
@@ -709,13 +710,13 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       {showSubmittedPin && (
         <div className="modal-overlay">
           <div className="modal pin-modal">
-            <div className="pin-modal-title">🔒 Verify Identity</div>
+            <div className="pin-modal-title"><Lock size={18}/> Verify Identity</div>
             <div className="pin-modal-sub">
               Enter your PIN to edit {pendingSubmittedOrder?.table_name}
             </div>
             {pendingSubmittedOrder?.status === "submitted" && (
               <div style={{background:"rgba(245,159,0,0.1)",border:"1px solid rgba(245,159,0,0.3)",borderRadius:"var(--r-sm)",padding:"10px 14px",marginBottom:"16px",fontSize:"12px",color:"#f59f00",textAlign:"center"}}>
-                ⚠️ This order was submitted for payment. Editing will reset the submission and log you out.
+                <AlertTriangle size={13}/> This order was submitted for payment. Editing will reset the submission and log you out.
               </div>
             )}
             <div className="pin-dots">
@@ -742,14 +743,14 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         <div className="modal-overlay">
           <div className="modal pin-modal">
             <div className="pin-modal-title">
-              🔒 {pendingAction==="submit" ? "Confirm Payment" : pendingAction==="loadOrder" ? "Verify Identity" : "Save Table"}
+              <Lock size={18}/> {pendingAction==="submit" ? "Confirm Payment" : pendingAction==="loadOrder" ? "Verify Identity" : "Save Table"}
             </div>
             <div className="pin-modal-sub">
               Enter your PIN to {pendingAction==="submit" ? "submit this payment" : pendingAction==="loadOrder" ? `edit ${pendingSubmittedOrder?.table_name}` : "save this table"}
             </div>
             {pendingAction==="loadOrder" && pendingSubmittedOrder?.status==="submitted" && (
               <div style={{background:"rgba(245,159,0,0.1)",border:"1px solid rgba(245,159,0,0.3)",borderRadius:"var(--r-sm)",padding:"10px 14px",marginBottom:"16px",fontSize:"12px",color:"#f59f00",textAlign:"center"}}>
-                ⚠️ Editing will reset the payment submission and log you out.
+                <AlertTriangle size={13}/> Editing will reset the payment submission and log you out.
               </div>
             )}
             <div className="pin-dots">
