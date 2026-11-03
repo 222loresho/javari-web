@@ -160,7 +160,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
 
       <Suspense fallback={<div className="loading-bar" />}>
         {tab === "cleared"  && <ClearedBills />}
-        {tab === "users"    && <UserManagement />}
+        {tab === "users"    && <UserManagement user={user} />}
         {tab === "report"   && <DailyReport />}
         {tab === "chart"    && <RevenueChart />}
         {tab === "lowstock" && <LowStock onCount={setLowCount} />}

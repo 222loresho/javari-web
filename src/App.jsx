@@ -6,6 +6,7 @@ import CashierBills from "./CashierBills";
 import useSessionTimeout from "./useSessionTimeout";
 
 const SuperAdmin = lazy(() => import("./SuperAdmin"));
+const Manager    = lazy(() => import("./Manager"));
 
 export default function App() {
   const [user, setUser] = useState(() => {
@@ -27,6 +28,7 @@ export default function App() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem("userpin");
+    localStorage.removeItem("pinlen");
     setUser(null); setView("default");
   };
 
@@ -39,6 +41,11 @@ export default function App() {
     return <POS user={user} onLogout={handleLogout} onSwitchToBills={() => setView("default")} />;
   if (user.role === "admin")
     return <Admin user={user} onLogout={handleLogout} onSwitchToPOS={() => setView("pos")} />;
+
+  if (user.role === "manager" && view === "pos")
+    return <POS user={user} onLogout={handleLogout} onSwitchToBills={() => setView("default")} />;
+  if (user.role === "manager")
+    return <Suspense fallback={<div className="loading-bar" />}><Manager user={user} onLogout={handleLogout} onSwitchToPOS={() => setView("pos")} /></Suspense>;
 
   if (user.role === "cashier") {
     if (view === "bills")

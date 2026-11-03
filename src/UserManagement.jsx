@@ -1,89 +1,236 @@
 import { useState, useEffect } from "react";
 import api from "./api";
-import { Users, X, UserPlus, Pencil, Trash2 } from "lucide-react";
+import { Users, X, UserPlus, Pencil, Trash2, Search, ShieldCheck, Power, PowerOff } from "lucide-react";
 
-export default function UserManagement() {
-  const [users,    setUsers]    = useState([]);
-  const [message,  setMessage]  = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [editUser, setEditUser] = useState(null);
-  const [form,     setForm]     = useState({ name:"", username:"", role:"cashier", pin:"" });
+const ROLE_META = {
+  manager: { label: "Manager", color: "#38bdf8" },
+  cashier: { label: "Cashier", color: "#2fbf71" },
+  waiter:  { label: "Waiter",  color: "#818cf8" },
+};
+
+const initials = (name) =>
+  (name || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+
+export default function UserManagement({ user }) {
+  const isAdmin = user?.role === "admin";
+  const [users,      setUsers]      = useState([]);
+  const [message,    setMessage]    = useState("");
+  const [showForm,   setShowForm]   = useState(false);
+  const [editUser,   setEditUser]   = useState(null);
+  const [search,     setSearch]     = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [form,       setForm]       = useState({ name:"", username:"", role:"", pin:"" });
+  const [busy,       setBusy]       = useState(false);
 
   const fetchUsers = () => api.get("/users/").then(r => setUsers(r.data)).catch(() => {});
-  useEffect(() => { fetchUsers(); }, []);
+
+  useEffect(() => {
+    fetchUsers();
+    setForm({ name:"", username:"", role: isAdmin ? "manager" : "cashier", pin:"" });
+  }, []);
 
   useEffect(() => {
     if (!message) return;
-    const t = setTimeout(() => setMessage(""), 3000);
+    const t = setTimeout(() => setMessage(""), 3500);
     return () => clearTimeout(t);
   }, [message]);
 
-  const resetForm = () => { setForm({name:"",username:"",role:"cashier",pin:""}); setEditUser(null); setShowForm(false); };
+  const resetForm = () => {
+    setForm({ name:"", username:"", role: isAdmin ? "manager" : "cashier", pin:"" });
+    setEditUser(null);
+    setShowForm(false);
+  };
+
+  const startEdit = (u) => {
+    setEditUser(u);
+    setForm({ name: u.name, username: u.username, role: u.role, pin: "" });
+    setShowForm(true);
+  };
 
   const saveUser = async () => {
-    if (!form.name.trim()||!form.username.trim()) return setMessage("Name and username required");
-    if (!editUser&&!form.pin)                      return setMessage("PIN is required");
-    if (form.pin&&(form.pin.length!==4||!/^\d{4}$/.test(form.pin))) return setMessage("PIN must be exactly 4 digits");
+    if (!form.name.trim())     return setMessage("Name is required");
+    if (!form.username.trim()) return setMessage("Username is required");
+    if (!editUser && !form.pin) return setMessage("PIN is required");
+    if (form.pin && !/^\d{4}$/.test(form.pin)) return setMessage("PIN must be exactly 4 digits");
+    setBusy(true);
     try {
-      if (editUser) { await api.put(`/users/${editUser.id}`, form); setMessage("User updated!"); }
-      else          { await api.post("/users/", form);              setMessage("User created!"); }
-      resetForm(); fetchUsers();
-    } catch(e) { setMessage(e.response?.data?.error||"Failed"); }
+      if (editUser) {
+        await api.put(`/users/${editUser.id}`, { name: form.name, pin: form.pin || undefined });
+        setMessage("User updated!");
+      } else {
+        await api.post("/users/", form);
+        setMessage("User created!");
+      }
+      resetForm();
+      fetchUsers();
+    } catch (e) {
+      setMessage(e.response?.data?.error || "Failed");
+    } finally { setBusy(false); }
   };
 
   const toggleActive = async (u) => {
-    try { await api.put(`/users/${u.id}`, { active: !u.active }); fetchUsers(); }
-    catch { setMessage("Failed"); }
+    const next = !u.active;
+    if (!next && !window.confirm(`Deactivate ${u.name}? They will not be able to log in.`)) return;
+    try {
+      await api.put(`/users/${u.id}`, { active: next });
+      setMessage(next ? "User activated" : "User deactivated");
+      fetchUsers();
+    } catch (e) { setMessage(e.response?.data?.error || "Failed"); }
   };
 
   const deleteUser = async (u) => {
-    if (!window.confirm(`Delete ${u.name}?`)) return;
-    try { await api.delete(`/users/${u.id}`); setMessage("Deleted!"); fetchUsers(); }
-    catch(e) { setMessage(e.response?.data?.error||"Failed"); }
+    const extra = u.role === "manager" ? " Their staff must be moved first." : "";
+    if (!window.confirm(`Delete ${u.name}? This cannot be undone.${extra}`)) return;
+    try {
+      await api.delete(`/users/${u.id}`);
+      setMessage("User deleted!");
+      fetchUsers();
+    } catch (e) { setMessage(e.response?.data?.error || "Failed"); }
   };
 
-  const roleColor = (r) => r==="admin"?"var(--red)":r==="waiter"?"#f0a500":"var(--accent)";
+  const filtered = users.filter(u => {
+    const q = search.trim().toLowerCase();
+    const matchSearch = !q || u.name.toLowerCase().includes(q) || u.username.toLowerCase().includes(q);
+    const matchRole   = roleFilter === "all" || u.role === roleFilter;
+    return matchSearch && matchRole;
+  });
+
+  const managers = filtered.filter(u => u.role === "manager");
+  const staff    = filtered.filter(u => u.role !== "manager");
+  const groups   = isAdmin
+    ? [{ title:"Managers", rows: managers }, { title:"Staff", rows: staff }]
+    : [{ title:"My Staff", rows: staff }];
+
+  const renderRow = (u) => {
+    const meta = ROLE_META[u.role] || { label: u.role, color: "var(--muted)" };
+    return (
+      <div key={u.id} className="admin-item" style={{ opacity:u.active?1:0.55 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:"12px", minWidth:0 }}>
+          <div className="um-avatar" style={{ background:`${meta.color}1f`, borderColor:`${meta.color}55`, color:meta.color }}>
+            {initials(u.name)}
+          </div>
+          <div style={{ minWidth:0 }}>
+            <div className="um-name-row">
+              <span className="admin-item-name">{u.name}</span>
+              <span className="um-badge" style={{ background:`${meta.color}1f`, color:meta.color, borderColor:`${meta.color}44` }}>{meta.label}</span>
+              {!u.active && <span className="um-badge" style={{ background:"rgba(120,120,120,0.18)", color:"var(--muted)", borderColor:"var(--border)" }}>Inactive</span>}
+            </div>
+            <div className="admin-item-sub">
+              @{u.username}
+              {u.role === "manager" && ` · ${users.filter(s => s.manager_id === u.id).length} staff`}
+              {u.manager_name && ` · Manager: ${u.manager_name}`}
+            </div>
+          </div>
+        </div>
+        <div className="admin-item-actions">
+          <button className="btn btn-ghost btn-sm" aria-label={`Edit ${u.name}`} onClick={() => startEdit(u)}><Pencil size={14}/></button>
+          <button
+            className="btn btn-ghost btn-sm"
+            aria-label={u.active ? `Deactivate ${u.name}` : `Activate ${u.name}`}
+            title={u.active ? "Deactivate" : "Activate"}
+            onClick={() => toggleActive(u)}
+          >
+            {u.active ? <PowerOff size={14}/> : <Power size={14}/>}
+          </button>
+          <button className="btn btn-danger btn-sm" aria-label={`Delete ${u.name}`} onClick={() => deleteUser(u)}><Trash2 size={14}/></button>
+        </div>
+      </div>
+    );
+  };
+
+  const formRoles = isAdmin
+    ? [{ value:"manager", label:"Manager" }]
+    : [{ value:"cashier", label:"Cashier" }, { value:"waiter", label:"Waiter" }];
 
   return (
-    <div style={{padding:"14px"}}>
-      <div className="flex-between" style={{marginBottom:"16px"}}>
-        <div className="section-title" style={{padding:0,margin:0}}><Users size={16}/> Users</div>
+    <div style={{ padding:"14px" }}>
+      <div className="flex-between" style={{ marginBottom:"14px" }}>
+        <div className="section-title" style={{ padding:0, margin:0 }}>
+          {isAdmin ? <ShieldCheck size={16}/> : <Users size={16}/>} {isAdmin ? "Team" : "My Staff"}
+        </div>
         <button className="btn btn-primary btn-sm" onClick={() => { resetForm(); setShowForm(!showForm); }}>
-          {showForm&&!editUser?<><X size={13}/> Cancel</>:<><UserPlus size={13}/> Add User</>}
+          {showForm && !editUser ? <><X size={13}/> Cancel</> : <><UserPlus size={13}/> {isAdmin ? "Add Manager" : "Add Staff"}</>}
         </button>
       </div>
-      {message && <div className={`toast ${message.includes("created")||message.includes("updated")||message.includes("Deleted")?"toast-success":"toast-error"}`}>{message}</div>}
-      {showForm && (
-        <div className="card" style={{border:"1px solid var(--accent)",marginBottom:"16px"}}>
-          <div className="section-title" style={{padding:0,marginBottom:"12px"}}>{editUser?<><Pencil size={14}/> Edit</>:<><UserPlus size={14}/> New User</>}</div>
-          <input className="input" placeholder="Full Name"   value={form.name}     onChange={e => setForm({...form,name:e.target.value})} />
-          <input className="input" placeholder="Username"    value={form.username} onChange={e => setForm({...form,username:e.target.value.toLowerCase()})} disabled={!!editUser} />
-          <input className="input" type="number" placeholder={editUser?"New PIN (blank=keep)":"4-digit PIN"} maxLength={4} value={form.pin} onChange={e => setForm({...form,pin:e.target.value.slice(0,4)})} />
-          <select className="input" value={form.role} onChange={e => setForm({...form,role:e.target.value})}>
-            <option value="cashier">💰 Cashier</option>
-            <option value="waiter">🤵 Waiter</option>
+
+      <div className="um-toolbar">
+        <div className="um-search">
+          <Search size={15}/>
+          <input
+            className="um-search-input"
+            placeholder="Search name or username"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && <button className="um-clear" aria-label="Clear search" onClick={() => setSearch("")}><X size={13}/></button>}
+        </div>
+        {isAdmin && (
+          <select className="input um-filter" value={roleFilter} onChange={e => setRoleFilter(e.target.value)}>
+            <option value="all">All roles</option>
+            <option value="manager">Managers</option>
+            <option value="cashier">Cashiers</option>
+            <option value="waiter">Waiters</option>
           </select>
+        )}
+      </div>
+
+      {message && <div className={`toast ${/created|updated|activated|deleted/i.test(message) ? "toast-success" : "toast-error"}`}>{message}</div>}
+
+      {showForm && (
+        <div className="card" style={{ border:"1px solid var(--accent)", marginBottom:"16px" }}>
+          <div className="section-title" style={{ padding:0, marginBottom:"12px" }}>
+            {editUser ? <><Pencil size={14}/> Edit {editUser.name}</> : <><UserPlus size={14}/> {isAdmin ? "New Manager" : "New Staff"}</>}
+          </div>
+          <input className="input" placeholder="Full name" value={form.name} onChange={e => setForm({ ...form, name:e.target.value })} />
+          <input
+            className="input"
+            placeholder="Username"
+            value={form.username}
+            onChange={e => setForm({ ...form, username:e.target.value.toLowerCase().replace(/\s+/g,"") })}
+            disabled={!!editUser}
+          />
+          <select
+            className="input"
+            value={form.role}
+            onChange={e => setForm({ ...form, role:e.target.value })}
+            disabled={!!editUser}
+          >
+            {formRoles.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+          </select>
+          <input
+            className="input"
+            type="password"
+            inputMode="numeric"
+            autoComplete="new-password"
+            placeholder={editUser ? "New 4-digit PIN (leave blank to keep)" : "4-digit PIN"}
+            value={form.pin}
+            onChange={e => setForm({ ...form, pin:e.target.value.replace(/\D/g,"").slice(0,4) })}
+          />
+          {!editUser && (
+            <div className="text-muted" style={{ fontSize:"11px", marginBottom:"10px" }}>
+              {isAdmin ? "Managers sign in with this PIN and create their own cashier/waiter accounts." : "Staff sign in with this PIN."}
+            </div>
+          )}
           <div className="modal-actions">
-            <button className="btn btn-primary" onClick={saveUser}>{editUser?"Save":"Create"}</button>
-            <button className="btn btn-ghost"   onClick={resetForm}>Cancel</button>
+            <button className="btn btn-primary" disabled={busy} onClick={saveUser}>{busy ? "Saving…" : editUser ? "Save" : "Create"}</button>
+            <button className="btn btn-ghost" onClick={resetForm}>Cancel</button>
           </div>
         </div>
       )}
-      {users.map(u => (
-        <div key={u.id} className="admin-item" style={{opacity:u.active?1:0.55}}>
-          <div>
-            <div style={{display:"flex",alignItems:"center",gap:"8px",flexWrap:"wrap",marginBottom:"4px"}}>
-              <span className="admin-item-name">{u.name}</span>
-              <span style={{background:roleColor(u.role),color:"white",fontSize:"10px",padding:"2px 8px",borderRadius:"10px",fontWeight:"bold"}}>{u.role.toUpperCase()}</span>
-              {!u.active&&<span style={{background:"#555",color:"white",fontSize:"10px",padding:"2px 6px",borderRadius:"10px"}}>INACTIVE</span>}
-            </div>
-            <div className="admin-item-sub">@{u.username} · PIN: {u.pin||"----"}</div>
+
+      {filtered.length === 0 && (
+        <div className="card" style={{ textAlign:"center", color:"var(--muted)", padding:"26px 16px" }}>
+          <Users size={22} style={{ marginBottom:"8px" }}/>
+          <div style={{ fontSize:"13px" }}>
+            {users.length === 0 ? (isAdmin ? "No managers yet — add one to get started." : "No staff assigned to you yet.") : "No users match this search."}
           </div>
-          <div className="admin-item-actions">
-            <button className="btn btn-ghost btn-sm" aria-label={`Edit ${u.name}`} onClick={() => { setEditUser(u); setForm({name:u.name,username:u.username,role:u.role,pin:""}); setShowForm(true); }}><Pencil size={14}/></button>
-            <button className="btn btn-sm" style={{background:u.active?"#555":"var(--accent)",color:"white"}} onClick={() => toggleActive(u)}>{u.active?"Deactivate":"Activate"}</button>
-            <button className="btn btn-danger btn-sm" aria-label={`Delete ${u.name}`} onClick={() => deleteUser(u)}><Trash2 size={14}/></button>
-          </div>
+        </div>
+      )}
+
+      {groups.map(g => g.rows.length > 0 && (
+        <div key={g.title} style={{ marginBottom:"14px" }}>
+          <div className="um-group-title">{g.title} <span>{g.rows.length}</span></div>
+          {g.rows.map(renderRow)}
         </div>
       ))}
     </div>

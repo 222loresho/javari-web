@@ -76,6 +76,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const [showPinModal,    setShowPinModal]    = useState(false);
   const [pinInput,        setPinInput]        = useState("");
   const [pinError,        setPinError]        = useState("");
+  const [pinLength] = useState(() => Number(localStorage.getItem("pinlen")) || 4);
   const [pendingAction,   setPendingAction]   = useState("save");
   const [message,         setMessage]         = useState("");
   const [search,          setSearch]          = useState("");
@@ -192,28 +193,34 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
     setMessage(`Editing ${o.table_name}`);
   };
 
-  const handleSubmittedPinKey = (k) => {
+  const verifyPin = async (pinValue) => {
+    try {
+      const res = await api.post("/auth/verify-pin", { pin: pinValue });
+      return !!res.data.valid;
+    } catch { return false; }
+  };
+
+  const handleSubmittedPinKey = async (k) => {
     if (k === "back") { setSubmittedPinInput(p => p.slice(0,-1)); return; }
     if (k === "C")    { setSubmittedPinInput(""); return; }
-    if (submittedPinInput.length >= 4) return;
+    if (submittedPinInput.length >= pinLength) return;
     const next = submittedPinInput + k;
     setSubmittedPinInput(next);
-    if (next.length === 4) {
-      const saved = localStorage.getItem("userpin");
-      if (next === saved) {
-        setShowSubmittedPin(false);
-        setSubmittedPinError("");
-        const o = pendingSubmittedOrder;
-        setActiveOrder(o);
-        setShowTableEdit(true);
-        setCart(o.items.map(i => ({ product_id: i.product_id, product_name: i.product_name, price: i.price, quantity: i.quantity, subtotal: i.subtotal })));
-        setMessage(`Editing ${o.table_name}`);
-        setPendingSubmittedOrder(null);
-      } else {
-        setSubmittedPinError("Wrong PIN — try again");
-        setSubmittedPinInput("");
-      }
+    if (next.length !== pinLength) return;
+    const ok = await verifyPin(next);
+    if (!ok) {
+      setSubmittedPinError("Wrong PIN — try again");
+      setSubmittedPinInput("");
+      return;
     }
+    setShowSubmittedPin(false);
+    setSubmittedPinError("");
+    const o = pendingSubmittedOrder;
+    setActiveOrder(o);
+    setShowTableEdit(true);
+    setCart(o.items.map(i => ({ product_id: i.product_id, product_name: i.product_name, price: i.price, quantity: i.quantity, subtotal: i.subtotal })));
+    setMessage(`Editing ${o.table_name}`);
+    setPendingSubmittedOrder(null);
   };
 
   const clearActiveOrder = () => {
@@ -301,30 +308,30 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
     } catch { setMessage("Sale failed!"); }
   };
 
-  const handlePinEntry = (k) => {
+  const handlePinEntry = async (k) => {
     if (k === "back") { setPinInput(p => p.slice(0,-1)); return; }
     if (k === "C")    { setPinInput(""); return; }
-    if (pinInput.length >= 4) return;
+    if (pinInput.length >= pinLength) return;
     const next = pinInput + k;
     setPinInput(next);
-    if (next.length === 4) {
-      const saved = localStorage.getItem("userpin");
-      if (next === saved) {
-        setPinError(""); setShowPinModal(false);
-        if (pendingAction === "submit") confirmSubmitPayment();
-        else if (pendingAction === "loadOrder") {
-          const o = pendingSubmittedOrder;
-          setPendingSubmittedOrder(null);
-          setActiveOrder(o);
-          setShowTableEdit(true);
-          setCart(o.items.map(i => ({ product_id: i.product_id, product_name: i.product_name, price: i.price, quantity: i.quantity, subtotal: i.subtotal })));
-          setMessage(`Editing ${o.table_name}`);
-        }
-        else confirmSaveTable();
-      } else {
-        setPinError("Wrong PIN — try again"); setPinInput("");
-      }
+    if (next.length !== pinLength) return;
+    const ok = await verifyPin(next);
+    if (!ok) {
+      setPinError("Wrong PIN — try again");
+      setPinInput("");
+      return;
     }
+    setPinError(""); setShowPinModal(false);
+    if (pendingAction === "submit") confirmSubmitPayment();
+    else if (pendingAction === "loadOrder") {
+      const o = pendingSubmittedOrder;
+      setPendingSubmittedOrder(null);
+      setActiveOrder(o);
+      setShowTableEdit(true);
+      setCart(o.items.map(i => ({ product_id: i.product_id, product_name: i.product_name, price: i.price, quantity: i.quantity, subtotal: i.subtotal })));
+      setMessage(`Editing ${o.table_name}`);
+    }
+    else confirmSaveTable();
   };
 
   useEffect(() => {
@@ -721,7 +728,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
               </div>
             )}
             <div className="pin-dots">
-              {[0,1,2,3].map(i => (
+              {Array.from({ length: pinLength }).map((_, i) => (
                 <div key={i} className={`pin-dot ${submittedPinInput.length>i?"filled":""}`}>
                   {submittedPinInput[i] ? "●" : ""}
                 </div>
@@ -755,7 +762,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
               </div>
             )}
             <div className="pin-dots">
-              {[0,1,2,3].map(i => (
+              {Array.from({ length: pinLength }).map((_, i) => (
                 <div key={i} className={`pin-dot ${pinInput.length>i?"filled":""}`}>
                   {pinInput[i] ? "●" : ""}
                 </div>
