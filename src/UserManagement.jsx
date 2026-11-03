@@ -25,7 +25,7 @@ export default function UserManagement({ user }) {
   const [pinForm,     setPinForm]     = useState({ current:"", next:"", confirm:"" });
   const [pinBusy,     setPinBusy]     = useState(false);
 
-  const requiredPin = isAdmin ? 6 : 4;
+  const requiredPin = 4;
 
   const fetchUsers = () => api.get("/users/").then(r => setUsers(r.data)).catch(() => {});
 
@@ -94,9 +94,8 @@ export default function UserManagement({ user }) {
   };
 
   const changePin = async () => {
-    const digits = requiredPin === 6 ? /^\d{6}$/ : /^\d{4}$/;
-    if (!pinForm.current)          return setMessage("Enter your current PIN");
-    if (!digits.test(pinForm.next)) return setMessage(`New PIN must be exactly ${requiredPin} digits`);
+    if (!pinForm.current)            return setMessage("Enter your current PIN");
+    if (!/^\d{4}$/.test(pinForm.next)) return setMessage("New PIN must be exactly 4 digits");
     if (pinForm.next !== pinForm.confirm) return setMessage("New PINs do not match");
     setPinBusy(true);
     try {
@@ -202,7 +201,7 @@ export default function UserManagement({ user }) {
             onChange={e => setPinForm({ ...pinForm, confirm:e.target.value.replace(/\D/g,"").slice(0,requiredPin) })}
           />
           <div className="text-muted" style={{ fontSize:"11px", marginBottom:"10px" }}>
-            {isAdmin ? "Admin accounts use a 6-digit PIN." : "Your PIN has 4 digits."}
+            Your PIN has 4 digits.
           </div>
           <div className="modal-actions">
             <button className="btn btn-primary" disabled={pinBusy} onClick={changePin}>{pinBusy ? "Saving…" : "Update PIN"}</button>

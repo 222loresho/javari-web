@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
-import { BookOpen, LogIn } from "lucide-react";
-
-const MAX_PIN = 6;
+import { BookOpen } from "lucide-react";
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState("");
@@ -33,16 +31,10 @@ export default function Login({ onLogin }) {
     if (loading) return;
     if (k === "C")    { setPin(""); setError(""); return; }
     if (k === "back") { setPin(p => p.slice(0,-1)); setError(""); return; }
-    if (pin.length >= MAX_PIN) return;
+    if (pin.length >= 4) return;
     const next = pin + k;
     setPin(next);
-    if (next.length === MAX_PIN) doLogin(next);
-  };
-
-  const submitPin = () => {
-    if (loading) return;
-    if (pin.length < 4) { setError("Enter at least 4 digits"); return; }
-    doLogin(pin);
+    if (next.length === 4) doLogin(next);
   };
 
   useEffect(() => {
@@ -53,7 +45,6 @@ export default function Login({ onLogin }) {
       if (e.key >= "0" && e.key <= "9")      { e.preventDefault(); handleKey(e.key); }
       else if (e.key === "Backspace")        { e.preventDefault(); handleKey("back"); }
       else if (e.key === "Escape")           { handleKey("C"); }
-      else if (e.key === "Enter")            { e.preventDefault(); submitPin(); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -71,7 +62,7 @@ export default function Login({ onLogin }) {
             autoCapitalize="none" autoComplete="off" autoCorrect="off" />
           <div className="pin-label">Enter Your PIN</div>
           <div className="pin-dots">
-            {[0,1,2,3,4,5].slice(0, pin.length > 4 ? 6 : 4).map(i => (
+            {[0,1,2,3].map(i => (
               <div key={i} className={`pin-dot ${pin.length > i ? "filled" : ""}`}>
                 {pin[i] ? "●" : ""}
               </div>
@@ -84,12 +75,6 @@ export default function Login({ onLogin }) {
                 onClick={() => handleKey(k === "⌫" ? "back" : String(k))}
                 disabled={loading}>{k}</button>
             ))}
-          </div>
-          <button className="btn btn-primary full-btn" onClick={submitPin} disabled={loading || pin.length < 4}>
-            <LogIn size={15}/> Login
-          </button>
-          <div className="text-muted" style={{fontSize:"11px",textAlign:"center",marginTop:"8px"}}>
-            Staff PINs are 4 digits · Admin PINs are 6 digits
           </div>
           {error   && <div className="message message-error">{error}</div>}
 

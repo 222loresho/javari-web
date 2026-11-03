@@ -135,7 +135,6 @@ export default function SuperAdmin({ user, onLogout }) {
   const [editItem,    setEditItem]    = useState(null);
   const [form,        setForm]        = useState(blankMarket());
   const [userForm,    setUserForm]    = useState({ name:"",username:"",pin:"",role:"admin" });
-  const userPinLen = ["admin","super_admin"].includes(userForm.role) ? 6 : 4;
   const [showUForm,   setShowUForm]   = useState(false);
   const [search,      setSearch]      = useState("");
   const [filterStatus,setFilterStatus]= useState("all");
@@ -204,8 +203,7 @@ export default function SuperAdmin({ user, onLogout }) {
   /* ── User actions ───────────────────────────────────────────────────── */
   const saveUser = async () => {
     if (!userForm.name||!userForm.username||!userForm.pin) return toast("All fields required","error");
-    if (userPinLen === 6 && !/^\d{6}$/.test(userForm.pin)) return toast("Admin accounts require a 6-digit PIN","error");
-    if (userPinLen === 4 && !/^\d{4}$/.test(userForm.pin)) return toast("PIN must be 4 digits","error");
+    if (!/^\d{4}$/.test(userForm.pin)) return toast("PIN must be 4 digits","error");
     try {
       await api.post("/superadmin/users", userForm);
       toast("User created!"); setShowUForm(false);
@@ -649,12 +647,8 @@ export default function SuperAdmin({ user, onLogout }) {
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#c9a84c",marginBottom:"16px",display:"flex",alignItems:"center",gap:"8px"}}><UserPlus size={15}/> New User</div>
                   <input className="sa-input" placeholder="Full Name" value={userForm.name} onChange={e=>setUserForm({...userForm,name:e.target.value})}/>
                   <input className="sa-input" placeholder="Username (lowercase)" value={userForm.username} onChange={e=>setUserForm({...userForm,username:e.target.value.toLowerCase()})}/>
-                  <input className="sa-input" type="password" inputMode="numeric" autoComplete="new-password" placeholder={`${userPinLen}-digit PIN${userPinLen===6?" (admins)" : ""}`} value={userForm.pin} onChange={e=>setUserForm({...userForm,pin:e.target.value.replace(/\D/g,"").slice(0,userPinLen)})}/>
-                  <select className="sa-input" value={userForm.role} onChange={e=>{
-                    const role = e.target.value;
-                    const max  = ["admin","super_admin"].includes(role) ? 6 : 4;
-                    setUserForm({...userForm, role, pin:userForm.pin.slice(0,max)});
-                  }}>
+                  <input className="sa-input" type="password" inputMode="numeric" autoComplete="new-password" placeholder="4-digit PIN" value={userForm.pin} onChange={e=>setUserForm({...userForm,pin:e.target.value.replace(/\D/g,"").slice(0,4)})}/>
+                  <select className="sa-input" value={userForm.role} onChange={e=>setUserForm({...userForm,role:e.target.value})}>
                     <option value="admin">⚙️ Admin</option>
                     <option value="manager">🧑‍💼 Manager</option>
                     <option value="cashier">💰 Cashier</option>
