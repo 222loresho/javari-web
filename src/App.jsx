@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import Login from "./Login";
 import POS from "./POS";
 import Admin from "./Admin";
 import CashierBills from "./CashierBills";
 import useSessionTimeout from "./useSessionTimeout";
-import SuperAdmin from "./SuperAdmin";
+
+const SuperAdmin = lazy(() => import("./SuperAdmin"));
 
 export default function App() {
   const [user, setUser] = useState(() => {
@@ -32,7 +33,7 @@ export default function App() {
   if (!user) return <Login onLogin={handleLogin} />;
 
   if (user.role === "super_admin")
-    return <SuperAdmin user={user} onLogout={handleLogout} />;
+    return <Suspense fallback={<div className="loading-bar" />}><SuperAdmin user={user} onLogout={handleLogout} /></Suspense>;
 
   if (user.role === "admin" && view === "pos")
     return <POS user={user} onLogout={handleLogout} onSwitchToBills={() => setView("default")} />;

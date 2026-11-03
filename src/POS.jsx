@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import api from "./api";
+import { fmtKsh } from "./format";
 import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search } from "lucide-react";
 
 
@@ -53,9 +54,9 @@ function SplitFields({ splits, setSplits, orderTotal }) {
         + Add Payment Method
       </button>
       <div className="split-total">
-        Paid: <strong style={{color:paid>=orderTotal?"var(--green)":"var(--red)"}}>KSh {paid}</strong> / KSh {orderTotal}
-        {change > 0 && <span style={{marginLeft:"10px",color:"var(--green)",fontWeight:"700"}}>Change: KSh {change.toFixed(0)}</span>}
-        {paid > 0 && change < 0 && <span style={{marginLeft:"10px",color:"var(--red)",fontWeight:"700",display:"inline-flex",alignItems:"center",gap:"4px"}}><AlertTriangle size={12}/> Short: KSh {short.toFixed(0)}</span>}
+        Paid: <strong style={{color:paid>=orderTotal?"var(--green)":"var(--red)"}}>{fmtKsh(paid)}</strong> / {fmtKsh(orderTotal)}
+        {change > 0 && <span style={{marginLeft:"10px",color:"var(--green)",fontWeight:"700"}}>Change: {fmtKsh(change.toFixed(0))}</span>}
+        {paid > 0 && change < 0 && <span style={{marginLeft:"10px",color:"var(--red)",fontWeight:"700",display:"inline-flex",alignItems:"center",gap:"4px"}}><AlertTriangle size={12}/> Short: {fmtKsh(short.toFixed(0))}</span>}
       </div>
     </div>
   );
@@ -430,7 +431,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                           </div>
                           <div className="table-meta">
                             <span>{o.items?.length||0} items</span>
-                            <span className="table-total">KSh {o.total}</span>
+                            <span className="table-total">{fmtKsh(o.total)}</span>
                           </div>
                         </div>
                         <div className="table-actions">
@@ -446,13 +447,13 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                 <div className="edit-panel">
                   <div className="edit-panel-header">
                     <span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><Pencil size={14}/> {activeOrder.table_name} — {activeOrder.order_number}</span>
-                    <button className="btn-icon" onClick={clearActiveOrder}><X size={15}/></button>
+                    <button className="btn-icon" aria-label="Clear active table" onClick={clearActiveOrder}><X size={15}/></button>
                   </div>
                   {cart.map(item => (
                     <div key={item.product_id} className="cart-item">
                       <div className="cart-item-row">
                         <span className="cart-item-name">{item.product_name}</span>
-                        <span className="cart-item-price">KSh {item.subtotal}</span>
+                        <span className="cart-item-price">{fmtKsh(item.subtotal)}</span>
                       </div>
                       <div className="cart-qty-row">
                         <button className="qty-btn" onClick={() => updateQty(item.product_id,-1)}>−</button>
@@ -462,7 +463,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                       </div>
                     </div>
                   ))}
-                  <div className="total-row"><span>Total</span><span className="total-amount">KSh {total}</span></div>
+                  <div className="total-row"><span>Total</span><span className="total-amount">{fmtKsh(total)}</span></div>
                   <div className="edit-actions">
                     <button className="btn btn-success" style={{flex:1}} onClick={updateTable}><RefreshCw size={14}/> Update</button>
                     <button className="btn btn-primary" style={{flex:1}} onClick={() => setShowPayModal(true)}><CreditCard size={14}/> Submit</button>
@@ -502,7 +503,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                   {o.status === "confirmed" ? <><CheckCircle2 size={12}/> Confirmed</> : <><Clock size={12}/> Awaiting</>}
                 </span>
               </div>
-              <div className="bill-amount">KSh {o.total}</div>
+              <div className="bill-amount">{fmtKsh(o.total)}</div>
               {o.status==="confirmed" && o.confirmed_by && <div className="bill-confirmed-by" style={{display:"flex",alignItems:"center",gap:"4px"}}><CheckCircle2 size={12}/> Confirmed by {o.confirmed_by}</div>}
               {o.rejection_note && <div className="bill-rejected" style={{display:"flex",alignItems:"center",gap:"4px"}}><XCircle size={12}/> Rejected: {o.rejection_note}</div>}
             </div>
@@ -530,7 +531,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
               {filteredProducts.map(p => (
                 <div key={p.id} className="product-card" onClick={() => addToCart(p)}>
                   <div className="product-name">{p.name}</div>
-                  <div className="product-price">KSh {p.price}</div>
+                  <div className="product-price">{fmtKsh(p.price)}</div>
                   <div className="product-stock"><span className={`stock-dot ${p.stock===0?"stock-out":p.stock<=5?"stock-low":"stock-ok"}`}/> {p.stock===0?"Out of stock":`${p.stock} in stock`}</div>
                 </div>
               ))}
@@ -541,7 +542,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
             {activeOrder && (
               <div className="active-order-banner">
                 <span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><ClipboardList size={14}/> {activeOrder.table_name} — {activeOrder.order_number}</span>
-                <button className="btn-icon" onClick={clearActiveOrder}><X size={15}/></button>
+                <button className="btn-icon" aria-label="Clear active table" onClick={clearActiveOrder}><X size={15}/></button>
               </div>
             )}
             <div className="cart-body">
@@ -556,7 +557,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                 <div key={item.product_id} className="cart-item">
                   <div className="cart-item-row">
                     <span className="cart-item-name">{item.product_name}</span>
-                    <span className="cart-item-price">KSh {item.subtotal}</span>
+                    <span className="cart-item-price">{fmtKsh(item.subtotal)}</span>
                   </div>
                   <div className="cart-qty-row">
                     <button className="qty-btn"
@@ -586,7 +587,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
             <div className="cart-footer">
               <div className="total-row">
                 <span>Total</span>
-                <span className="total-amount">KSh {total}</span>
+                <span className="total-amount">{fmtKsh(total)}</span>
               </div>
               {!activeOrder ? (
                 <button className="btn btn-secondary full-btn mb" onClick={saveTable}><Save size={14}/> Save Table</button>
@@ -622,13 +623,13 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
             {activeOrder.items?.map(i => (
               <div key={i.product_id} className="modal-row">
                 <span>{i.product_name} ×{i.quantity}</span>
-                <span>KSh {i.subtotal}</span>
+                <span>{fmtKsh(i.subtotal)}</span>
               </div>
             ))}
             <div className="modal-divider" />
             <div className="modal-total">
               <span>Total</span>
-              <span className="modal-total-amount">KSh {activeOrder.total}</span>
+              <span className="modal-total-amount">{fmtKsh(activeOrder.total)}</span>
             </div>
             <SplitFields splits={splits} setSplits={setSplits} orderTotal={activeOrder.total} />
             {message && <div className="message message-error">{message}</div>}
@@ -653,14 +654,14 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
               <div className="receipt-row"><span>Date</span><span>{receipt.date.split(",")[0]}</span></div>
               <div className="receipt-divider" />
               {receipt.items.map((i,idx) => (
-                <div key={idx} className="receipt-row"><span>{i.product_name} ×{i.quantity}</span><span>KSh {i.subtotal}</span></div>
+                <div key={idx} className="receipt-row"><span>{i.product_name} ×{i.quantity}</span><span>{fmtKsh(i.subtotal)}</span></div>
               ))}
               <div className="receipt-divider" />
-              <div className="receipt-row receipt-total-row"><span>TOTAL</span><span>KSh {receipt.total}</span></div>
+              <div className="receipt-row receipt-total-row"><span>TOTAL</span><span>{fmtKsh(receipt.total)}</span></div>
               {receipt.splits?.map((s,i) => (
                 <div key={i} className="receipt-row">
                   <span>{s.method==="mpesa"?"Mpesa":s.method==="card"?"Card":s.method==="billout"?"Billout":"Cash"}{s.ref?` (${s.ref})`:""}</span>
-                  <span>KSh {s.amount}</span>
+                  <span>{fmtKsh(s.amount)}</span>
                 </div>
               ))}
               <div className="receipt-divider" />

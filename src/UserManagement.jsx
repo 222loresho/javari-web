@@ -80,9 +80,9 @@ export default function UserManagement() {
             <div className="admin-item-sub">@{u.username} · PIN: {u.pin||"----"}</div>
           </div>
           <div className="admin-item-actions">
-            <button className="btn btn-ghost btn-sm" onClick={() => { setEditUser(u); setForm({name:u.name,username:u.username,role:u.role,pin:""}); setShowForm(true); }}><Pencil size={14}/></button>
+            <button className="btn btn-ghost btn-sm" aria-label={`Edit ${u.name}`} onClick={() => { setEditUser(u); setForm({name:u.name,username:u.username,role:u.role,pin:""}); setShowForm(true); }}><Pencil size={14}/></button>
             <button className="btn btn-sm" style={{background:u.active?"#555":"var(--accent)",color:"white"}} onClick={() => toggleActive(u)}>{u.active?"Deactivate":"Activate"}</button>
-            <button className="btn btn-danger btn-sm" onClick={() => deleteUser(u)}><Trash2 size={14}/></button>
+            <button className="btn btn-danger btn-sm" aria-label={`Delete ${u.name}`} onClick={() => deleteUser(u)}><Trash2 size={14}/></button>
           </div>
         </div>
       ))}

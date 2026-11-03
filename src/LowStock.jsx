@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
+import { fmtKsh } from "./format";
 import { TriangleAlert, CheckCircle2 } from "lucide-react";
 
 export default function LowStock({ onCount }) {
@@ -32,7 +33,7 @@ export default function LowStock({ onCount }) {
         <div key={p.id} className="admin-item">
           <div>
             <div className="admin-item-name">{p.name}</div>
-            <div className="admin-item-sub">KSh {p.price}</div>
+            <div className="admin-item-sub">{fmtKsh(p.price)}</div>
           </div>
           <div style={{background:stockColor(p.stock),color:"white",padding:"4px 14px",borderRadius:"20px",fontWeight:"bold",fontSize:"14px"}}>
             {p.stock===0?"OUT OF STOCK":`${p.stock} left`}

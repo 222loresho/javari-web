@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
+import { fmtKsh } from "./format";
 import { ReceiptText, User, ShoppingCart, LogOut, RefreshCw, Inbox, CreditCard, CheckCircle2, XCircle, X, Banknote, Smartphone, Receipt, Clock } from "lucide-react";
 
 export default function CashierBills({ user, onLogout, onSwitchToPOS }) {
@@ -56,7 +57,7 @@ export default function CashierBills({ user, onLogout, onSwitchToPOS }) {
         <div className="header-right">
           {user && <span className="header-user" style={{display:"inline-flex",alignItems:"center",gap:"5px"}}><User size={12}/> {user.name}</span>}
           {onSwitchToPOS && <button className="btn btn-success btn-sm" onClick={onSwitchToPOS}><ShoppingCart size={13}/> POS</button>}
-          <button className="btn btn-ghost btn-sm" onClick={fetchAll}><RefreshCw size={13}/></button>
+          <button className="btn btn-ghost btn-sm" aria-label="Refresh bills" onClick={fetchAll}><RefreshCw size={13}/></button>
           {onLogout && <button className="btn btn-danger btn-sm" onClick={onLogout}><LogOut size={13}/> Logout</button>}
         </div>
       </div>
@@ -82,14 +83,14 @@ export default function CashierBills({ user, onLogout, onSwitchToPOS }) {
                   <span className="bill-table">{o.table_name}</span>
                   <span className="text-muted text-sm" style={{display:"inline-flex",alignItems:"center",gap:"4px"}}><User size={12}/> {o.waiter_name}</span>
                 </div>
-                <span className="bill-amount-lg">KSh {o.total}</span>
+                <span className="bill-amount-lg">{fmtKsh(o.total)}</span>
               </div>
               <div className="text-muted text-sm" style={{marginBottom:"10px",display:"flex",alignItems:"center",gap:"4px"}}><Clock size={12}/> {fmtTime(o.submitted_at)}</div>
               <div style={{marginBottom:"10px"}}>
                 {o.items.map((item,i) => (
                   <div key={i} className="flex-between text-sm" style={{marginBottom:"4px"}}>
                     <span>{item.product_name} ×{item.quantity}</span>
-                    <span>KSh {item.subtotal}</span>
+                    <span>{fmtKsh(item.subtotal)}</span>
                   </div>
                 ))}
               </div>
@@ -99,7 +100,7 @@ export default function CashierBills({ user, onLogout, onSwitchToPOS }) {
                   o.payment_details.map((s,i) => (
                     <div key={i} className="flex-between text-sm" style={{marginBottom:"4px"}}>
                       <span>{methodIcon(s.method)} {methodLabel(s.method)}{s.ref?` (${s.ref})`:""}</span>
-                      <strong>KSh {s.amount}</strong>
+                      <strong>{fmtKsh(s.amount)}</strong>
                     </div>
                   ))
                 ) : <div className="text-sm text-muted">{methodIcon(o.payment_method)} {methodLabel(o.payment_method)}</div>}
@@ -124,7 +125,7 @@ export default function CashierBills({ user, onLogout, onSwitchToPOS }) {
                   <span className="bill-table">{o.table_name}</span>
                   <span className="text-muted text-sm" style={{display:"inline-flex",alignItems:"center",gap:"4px"}}><User size={12}/> {o.waiter_name}</span>
                 </div>
-                <span className="bill-amount-lg">KSh {o.total}</span>
+                <span className="bill-amount-lg">{fmtKsh(o.total)}</span>
               </div>
               <div className="text-sm text-green" style={{display:"flex",alignItems:"center",gap:"4px"}}><CheckCircle2 size={12}/> Confirmed by {o.confirmed_by} at {fmtTime(o.confirmed_at)}</div>
             </div>

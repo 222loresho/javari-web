@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import api from "./api";
+import { fmtKsh } from "./format";
 import { Settings, Package, Tags, BarChart3, CheckCircle2, Users, CalendarDays, TrendingUp, PackageSearch, BookOpen, ShoppingCart, LogOut, User, Pencil, Trash2, AlertTriangle } from "lucide-react";
-import ClearedBills   from "./ClearedBills";
-import MenuQR         from "./MenuQR";
-import UserManagement from "./UserManagement";
-import DailyReport    from "./DailyReport";
-import LowStock       from "./LowStock";
-import RevenueChart   from "./RevenueChart";
+
+const ClearedBills   = lazy(() => import("./ClearedBills"));
+const MenuQR         = lazy(() => import("./MenuQR"));
+const UserManagement = lazy(() => import("./UserManagement"));
+const DailyReport    = lazy(() => import("./DailyReport"));
+const LowStock       = lazy(() => import("./LowStock"));
+const RevenueChart   = lazy(() => import("./RevenueChart"));
 
 export default function Admin({ user, onLogout, onSwitchToPOS }) {
   const [tab,         setTab]         = useState("products");
@@ -119,11 +121,11 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
             <div key={p.id} className="admin-item">
               <div>
                 <div className="admin-item-name">{p.name}</div>
-                <div className="admin-item-sub">KSh {p.price} | Stock: {p.stock} | {categories.find(c=>c.id===p.category_id)?.name||"No category"}</div>
+                <div className="admin-item-sub">{fmtKsh(p.price)} | Stock: {p.stock} | {categories.find(c=>c.id===p.category_id)?.name||"No category"}</div>
               </div>
               <div className="admin-item-actions">
-                <button className="btn btn-ghost btn-sm"  onClick={() => setEditProduct(p)}><Pencil size={13}/></button>
-                <button className="btn btn-danger btn-sm" onClick={() => deleteProduct(p.id)}><Trash2 size={13}/></button>
+                <button className="btn btn-ghost btn-sm"  aria-label={`Edit ${p.name}`} onClick={() => setEditProduct(p)}><Pencil size={13}/></button>
+                <button className="btn btn-danger btn-sm" aria-label={`Delete ${p.name}`} onClick={() => deleteProduct(p.id)}><Trash2 size={13}/></button>
               </div>
             </div>
           ))}
@@ -150,18 +152,20 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
                 <div className="admin-item-name">#{s.id} — {s.cashier_name}</div>
                 <div className="admin-item-sub">{s.payment_method} | {new Date(s.created_at).toLocaleString()}</div>
               </div>
-              <div className="text-green text-bold">KSh {s.total}</div>
+              <div className="text-green text-bold">{fmtKsh(s.total)}</div>
             </div>
           ))}
         </div>
       )}
 
-      {tab === "cleared"  && <ClearedBills />}
-      {tab === "users"    && <UserManagement />}
-      {tab === "report"   && <DailyReport />}
-      {tab === "chart"    && <RevenueChart />}
-      {tab === "lowstock" && <LowStock onCount={setLowCount} />}
-      {tab === "menu"     && <MenuQR />}
+      <Suspense fallback={<div className="loading-bar" />}>
+        {tab === "cleared"  && <ClearedBills />}
+        {tab === "users"    && <UserManagement />}
+        {tab === "report"   && <DailyReport />}
+        {tab === "chart"    && <RevenueChart />}
+        {tab === "lowstock" && <LowStock onCount={setLowCount} />}
+        {tab === "menu"     && <MenuQR />}
+      </Suspense>
     </div>
   );
 }

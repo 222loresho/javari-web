@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
+import { fmtKsh } from "./format";
 import { BarChart3, ClipboardList, Package, ReceiptText, Trophy, ChevronUp, ChevronDown, Smartphone, CreditCard, Banknote } from "lucide-react";
 
 export default function DailyReport() {
@@ -42,7 +43,7 @@ export default function DailyReport() {
           <div className="stats-grid">
             <div className="stat-card">
               <div className="stat-label">Total Revenue</div>
-              <div className="stat-value text-green">KSh {report.total_revenue}</div>
+              <div className="stat-value text-green">{fmtKsh(report.total_revenue)}</div>
             </div>
             <div className="stat-card">
               <div className="stat-label">Transactions</div>
@@ -51,7 +52,7 @@ export default function DailyReport() {
             {Object.entries(report.by_payment_method||{}).map(([m,v]) => (
               <div key={m} className="stat-card">
                 <div className="stat-label">{mLabel(m)}</div>
-                <div className="stat-value">KSh {v.total}</div>
+                <div className="stat-value">{fmtKsh(v.total)}</div>
                 <div className="stat-sub">{v.count} sales</div>
               </div>
             ))}
@@ -66,7 +67,7 @@ export default function DailyReport() {
                     <span style={{fontSize:"13px"}}>{p.product_name}</span>
                   </div>
                   <div style={{textAlign:"right"}}>
-                    <div className="text-green text-bold text-sm">KSh {p.revenue}</div>
+                    <div className="text-green text-bold text-sm">{fmtKsh(p.revenue)}</div>
                     <div className="text-muted text-sm">{p.quantity} sold</div>
                   </div>
                 </div>
@@ -93,7 +94,7 @@ export default function DailyReport() {
                   <td style={{padding:"8px 4px",fontSize:"12px",color:"var(--muted)"}}>{i+1}</td>
                   <td style={{padding:"8px 4px",fontSize:"13px"}}>{p.product_name}</td>
                   <td style={{padding:"8px 4px",fontSize:"13px",textAlign:"center",fontWeight:"bold"}}>{p.quantity}</td>
-                  <td style={{padding:"8px 4px",fontSize:"13px",textAlign:"right",color:"var(--green)"}}>KSh {p.revenue}</td>
+                  <td style={{padding:"8px 4px",fontSize:"13px",textAlign:"right",color:"var(--green)"}}>{fmtKsh(p.revenue)}</td>
                 </tr>
               ))}
             </tbody>
@@ -112,7 +113,7 @@ export default function DailyReport() {
                   <span className="text-sm text-muted">{mLabel(s.payment_method)}</span>
                 </div>
                 <div style={{textAlign:"right"}}>
-                  <div className="text-green text-bold">KSh {s.total}</div>
+                  <div className="text-green text-bold">{fmtKsh(s.total)}</div>
                   <div className="text-muted text-sm">{fmtTime(s.created_at)}</div>
                 </div>
               </div>
@@ -123,7 +124,7 @@ export default function DailyReport() {
                 <div style={{marginTop:"10px",borderTop:"1px solid var(--card)",paddingTop:"10px"}}>
                   {s.items?.map((i,idx) => (
                     <div key={idx} className="flex-between text-sm" style={{marginBottom:"4px"}}>
-                      <span>{i.product_name} ×{i.quantity}</span><span>KSh {i.subtotal}</span>
+                      <span>{i.product_name} ×{i.quantity}</span><span>{fmtKsh(i.subtotal)}</span>
                     </div>
                   ))}
                 </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
+import { fmtKsh } from "./format";
 import { CheckCircle2, User, ChevronUp, ChevronDown, Printer } from "lucide-react";
 
 export default function ClearedBills() {
@@ -22,7 +23,7 @@ export default function ClearedBills() {
               <span className="bill-table">{o.table_name}</span>
               <span className="text-muted text-sm" style={{display:"inline-flex",alignItems:"center",gap:"4px"}}><User size={12}/> {o.waiter_name}</span>
             </div>
-            <span className="text-green text-bold">KSh {o.total}</span>
+            <span className="text-green text-bold">{fmtKsh(o.total)}</span>
           </div>
           <div className="text-muted text-sm" style={{marginBottom:"10px"}}>{new Date(o.created_at).toLocaleString()}</div>
           <div style={{display:"flex",gap:"8px"}}>
@@ -33,7 +34,7 @@ export default function ClearedBills() {
             <div style={{marginTop:"10px",borderTop:"1px solid var(--card)",paddingTop:"10px"}}>
               {o.items.map((i,idx) => (
                 <div key={idx} className="flex-between text-sm" style={{marginBottom:"4px"}}>
-                  <span>{i.product_name} ×{i.quantity}</span><span>KSh {i.subtotal}</span>
+                  <span>{i.product_name} ×{i.quantity}</span><span>{fmtKsh(i.subtotal)}</span>
                 </div>
               ))}
             </div>

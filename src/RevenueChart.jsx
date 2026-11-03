@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
+import { fmtKsh } from "./format";
 import { TrendingUp, RefreshCw, BarChart3 } from "lucide-react";
 
 export default function RevenueChart() {
@@ -60,7 +61,7 @@ export default function RevenueChart() {
     <div style={{padding:"14px"}}>
       <div className="flex-between" style={{marginBottom:"16px"}}>
         <div className="section-title" style={{padding:0,margin:0}}><TrendingUp size={16}/> Revenue Chart</div>
-        <button className="btn btn-ghost btn-sm" onClick={fetchData}><RefreshCw size={14}/></button>
+        <button className="btn btn-ghost btn-sm" aria-label="Refresh revenue" onClick={fetchData}><RefreshCw size={14}/></button>
       </div>
       <div className="tabs" style={{marginBottom:"12px",padding:0}}>
         {[["daily","Today"],["weekly","7 Days"],["monthly","30 Days"],["yearly","12 Months"]].map(([p,l]) => (
@@ -73,13 +74,13 @@ export default function RevenueChart() {
           <div className="stats-grid" style={{marginBottom:"16px"}}>
             <div className="stat-card">
               <div className="stat-label">Total Revenue</div>
-              <div className="stat-value text-green">KSh {data.total.toLocaleString()}</div>
+              <div className="stat-value text-green">{fmtKsh(data.total)}</div>
             </div>
             {data.peak?.revenue>0 && (
               <div className="stat-card">
                 <div className="stat-label">Peak Period</div>
                 <div className="stat-value" style={{fontSize:"14px"}}>{fmtLabel(data.peak.label)}</div>
-                <div className="stat-sub text-green">KSh {data.peak.revenue.toLocaleString()}</div>
+                <div className="stat-sub text-green">{fmtKsh(data.peak.revenue)}</div>
               </div>
             )}
           </div>
