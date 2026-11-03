@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "./api";
-import { Users, X, UserPlus, Pencil, Trash2, Search, ShieldCheck, Power, PowerOff } from "lucide-react";
+import { Users, X, UserPlus, Pencil, Trash2, Search, ShieldCheck, Power, PowerOff, KeyRound } from "lucide-react";
 
 const ROLE_META = {
   manager: { label: "Manager", color: "#38bdf8" },
@@ -21,6 +21,11 @@ export default function UserManagement({ user }) {
   const [roleFilter, setRoleFilter] = useState("all");
   const [form,       setForm]       = useState({ name:"", username:"", role:"", pin:"" });
   const [busy,       setBusy]       = useState(false);
+  const [showPinForm, setShowPinForm] = useState(false);
+  const [pinForm,     setPinForm]     = useState({ current:"", next:"", confirm:"" });
+  const [pinBusy,     setPinBusy]     = useState(false);
+
+  const requiredPin = isAdmin ? 6 : 4;
 
   const fetchUsers = () => api.get("/users/").then(r => setUsers(r.data)).catch(() => {});
 
@@ -88,6 +93,23 @@ export default function UserManagement({ user }) {
     } catch (e) { setMessage(e.response?.data?.error || "Failed"); }
   };
 
+  const changePin = async () => {
+    const digits = requiredPin === 6 ? /^\d{6}$/ : /^\d{4}$/;
+    if (!pinForm.current)          return setMessage("Enter your current PIN");
+    if (!digits.test(pinForm.next)) return setMessage(`New PIN must be exactly ${requiredPin} digits`);
+    if (pinForm.next !== pinForm.confirm) return setMessage("New PINs do not match");
+    setPinBusy(true);
+    try {
+      const res = await api.post("/auth/change-pin", { current_pin: pinForm.current, new_pin: pinForm.next });
+      localStorage.setItem("pinlen", String(res.data.pin_length || requiredPin));
+      setPinForm({ current:"", next:"", confirm:"" });
+      setShowPinForm(false);
+      setMessage("PIN updated!");
+    } catch (e) {
+      setMessage(e.response?.data?.error || "Failed");
+    } finally { setPinBusy(false); }
+  };
+
   const filtered = users.filter(u => {
     const q = search.trim().toLowerCase();
     const matchSearch = !q || u.name.toLowerCase().includes(q) || u.username.toLowerCase().includes(q);
@@ -148,10 +170,46 @@ export default function UserManagement({ user }) {
         <div className="section-title" style={{ padding:0, margin:0 }}>
           {isAdmin ? <ShieldCheck size={16}/> : <Users size={16}/>} {isAdmin ? "Team" : "My Staff"}
         </div>
-        <button className="btn btn-primary btn-sm" onClick={() => { resetForm(); setShowForm(!showForm); }}>
-          {showForm && !editUser ? <><X size={13}/> Cancel</> : <><UserPlus size={13}/> {isAdmin ? "Add Manager" : "Add Staff"}</>}
-        </button>
+        <div style={{ display:"flex", gap:"6px" }}>
+          <button className="btn btn-ghost btn-sm" onClick={() => { setShowPinForm(v => !v); setPinForm({ current:"", next:"", confirm:"" }); }}>
+            <KeyRound size={13}/> Change my PIN
+          </button>
+          <button className="btn btn-primary btn-sm" onClick={() => { resetForm(); setShowForm(!showForm); }}>
+            {showForm && !editUser ? <><X size={13}/> Cancel</> : <><UserPlus size={13}/> {isAdmin ? "Add Manager" : "Add Staff"}</>}
+          </button>
+        </div>
       </div>
+
+      {showPinForm && (
+        <div className="card" style={{ border:"1px solid var(--border-mid)", marginBottom:"16px" }}>
+          <div className="section-title" style={{ padding:0, marginBottom:"12px" }}><KeyRound size={14}/> Change my PIN</div>
+          <input
+            className="input" type="password" inputMode="numeric" autoComplete="current-password"
+            placeholder="Current PIN"
+            value={pinForm.current}
+            onChange={e => setPinForm({ ...pinForm, current:e.target.value.replace(/\D/g,"").slice(0,requiredPin) })}
+          />
+          <input
+            className="input" type="password" inputMode="numeric" autoComplete="new-password"
+            placeholder={`New ${requiredPin}-digit PIN`}
+            value={pinForm.next}
+            onChange={e => setPinForm({ ...pinForm, next:e.target.value.replace(/\D/g,"").slice(0,requiredPin) })}
+          />
+          <input
+            className="input" type="password" inputMode="numeric" autoComplete="new-password"
+            placeholder="Confirm new PIN"
+            value={pinForm.confirm}
+            onChange={e => setPinForm({ ...pinForm, confirm:e.target.value.replace(/\D/g,"").slice(0,requiredPin) })}
+          />
+          <div className="text-muted" style={{ fontSize:"11px", marginBottom:"10px" }}>
+            {isAdmin ? "Admin accounts use a 6-digit PIN." : "Your PIN has 4 digits."}
+          </div>
+          <div className="modal-actions">
+            <button className="btn btn-primary" disabled={pinBusy} onClick={changePin}>{pinBusy ? "Saving…" : "Update PIN"}</button>
+            <button className="btn btn-ghost" onClick={() => setShowPinForm(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
 
       <div className="um-toolbar">
         <div className="um-search">
