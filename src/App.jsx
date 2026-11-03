@@ -38,12 +38,12 @@ export default function App() {
     return <Suspense fallback={<div className="loading-bar" />}><SuperAdmin user={user} onLogout={handleLogout} /></Suspense>;
 
   if (user.role === "admin" && view === "pos")
-    return <POS user={user} onLogout={handleLogout} onSwitchToBills={() => setView("default")} />;
+    return <POS user={user} onLogout={handleLogout} onExit={() => setView("default")} exitLabel="Admin" />;
   if (user.role === "admin")
     return <Admin user={user} onLogout={handleLogout} onSwitchToPOS={() => setView("pos")} />;
 
   if (user.role === "manager" && view === "pos")
-    return <POS user={user} onLogout={handleLogout} onSwitchToBills={() => setView("default")} />;
+    return <POS user={user} onLogout={handleLogout} onExit={() => setView("default")} exitLabel="Manager" />;
   if (user.role === "manager")
     return <Suspense fallback={<div className="loading-bar" />}><Manager user={user} onLogout={handleLogout} onSwitchToPOS={() => setView("pos")} /></Suspense>;
 

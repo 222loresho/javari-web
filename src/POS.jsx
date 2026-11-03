@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import api from "./api";
 import { fmtKsh } from "./format";
-import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search } from "lucide-react";
+import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search, LayoutDashboard } from "lucide-react";
 
 
 /* ── SplitFields — standalone to prevent re-render keypad loss ─────────── */
@@ -62,7 +62,7 @@ function SplitFields({ splits, setSplits, orderTotal }) {
   );
 }
 
-export default function POS({ user, onLogout, showBills = false, onSwitchToBills }) {
+export default function POS({ user, onLogout, showBills = false, onSwitchToBills, onExit, exitLabel = "Dashboard" }) {
   const [products,        setProducts]        = useState([]);
   const [categories,      setCategories]      = useState([]);
   const [cart, setCart] = useState(() => {
@@ -374,6 +374,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         <h2><ShoppingCart size={19}/> POS — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--accent-hi)"}}>Vendaura</span></h2>
         <div className="header-right">
           <span className="header-user" style={{display:"inline-flex",alignItems:"center",gap:"5px"}}><User size={12}/> {user.name}</span>
+          {onExit && <button className="btn btn-ghost btn-sm" onClick={onExit}><LayoutDashboard size={13}/> {exitLabel}</button>}
           {onSwitchToBills && <button className="btn btn-ghost btn-sm" onClick={onSwitchToBills}><ReceiptText size={13}/> Bills</button>}
           <button className="btn btn-danger btn-sm" onClick={onLogout}><LogOut size={13}/> Logout</button>
         </div>
@@ -485,7 +486,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       {view === "bills" && (
         <div className="bills-view">
           <div className="section-header">
-            <span className="section-title">My Submitted Bills</span>
+            <span className="section-title">Submitted Bills</span>
             <button className="btn btn-ghost btn-sm" onClick={fetchOrders}><RefreshCw size={13}/> Refresh</button>
           </div>
           {submittedOrders.length === 0 && (

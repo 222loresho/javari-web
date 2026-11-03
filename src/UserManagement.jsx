@@ -19,7 +19,7 @@ export default function UserManagement({ user }) {
   const [editUser,   setEditUser]   = useState(null);
   const [search,     setSearch]     = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [form,       setForm]       = useState({ name:"", username:"", role:"", pin:"" });
+  const [form,       setForm]       = useState({ name:"", username:"", role:"", pin:"", manager_id:"" });
   const [busy,       setBusy]       = useState(false);
   const [showPinForm, setShowPinForm] = useState(false);
   const [pinForm,     setPinForm]     = useState({ current:"", next:"", confirm:"" });
@@ -29,9 +29,13 @@ export default function UserManagement({ user }) {
 
   const fetchUsers = () => api.get("/users/").then(r => setUsers(r.data)).catch(() => {});
 
+  const blankForm = () => ({
+    name:"", username:"", role: isAdmin ? "manager" : "cashier", pin:"", manager_id:""
+  });
+
   useEffect(() => {
     fetchUsers();
-    setForm({ name:"", username:"", role: isAdmin ? "manager" : "cashier", pin:"" });
+    setForm(blankForm());
   }, []);
 
   useEffect(() => {
@@ -41,14 +45,14 @@ export default function UserManagement({ user }) {
   }, [message]);
 
   const resetForm = () => {
-    setForm({ name:"", username:"", role: isAdmin ? "manager" : "cashier", pin:"" });
+    setForm(blankForm());
     setEditUser(null);
     setShowForm(false);
   };
 
   const startEdit = (u) => {
     setEditUser(u);
-    setForm({ name: u.name, username: u.username, role: u.role, pin: "" });
+    setForm({ name: u.name, username: u.username, role: u.role, pin: "", manager_id: u.manager_id ? String(u.manager_id) : "" });
     setShowForm(true);
   };
 
@@ -60,10 +64,18 @@ export default function UserManagement({ user }) {
     setBusy(true);
     try {
       if (editUser) {
-        await api.put(`/users/${editUser.id}`, { name: form.name, pin: form.pin || undefined });
+        const payload = { name: form.name };
+        if (form.pin) payload.pin = form.pin;
+        if (isAdmin) {
+          payload.role = form.role;
+          payload.manager_id = form.role === "manager" ? null : (form.manager_id || null);
+        }
+        await api.put(`/users/${editUser.id}`, payload);
         setMessage("User updated!");
       } else {
-        await api.post("/users/", form);
+        const payload = { name: form.name, username: form.username, role: form.role, pin: form.pin };
+        if (isAdmin && form.role !== "manager") payload.manager_id = form.manager_id || null;
+        await api.post("/users/", payload);
         setMessage("User created!");
       }
       resetForm();
@@ -160,8 +172,10 @@ export default function UserManagement({ user }) {
   };
 
   const formRoles = isAdmin
-    ? [{ value:"manager", label:"Manager" }]
+    ? [{ value:"manager", label:"Manager" }, { value:"cashier", label:"Cashier" }, { value:"waiter", label:"Waiter" }]
     : [{ value:"cashier", label:"Cashier" }, { value:"waiter", label:"Waiter" }];
+
+  const managerOptions = users.filter(u => u.role === "manager");
 
   return (
     <div style={{ padding:"14px" }}>
@@ -174,7 +188,7 @@ export default function UserManagement({ user }) {
             <KeyRound size={13}/> Change my PIN
           </button>
           <button className="btn btn-primary btn-sm" onClick={() => { resetForm(); setShowForm(!showForm); }}>
-            {showForm && !editUser ? <><X size={13}/> Cancel</> : <><UserPlus size={13}/> {isAdmin ? "Add Manager" : "Add Staff"}</>}
+            {showForm && !editUser ? <><X size={13}/> Cancel</> : <><UserPlus size={13}/> {isAdmin ? "Add User" : "Add Staff"}</>}
           </button>
         </div>
       </div>
@@ -236,7 +250,7 @@ export default function UserManagement({ user }) {
       {showForm && (
         <div className="card" style={{ border:"1px solid var(--accent)", marginBottom:"16px" }}>
           <div className="section-title" style={{ padding:0, marginBottom:"12px" }}>
-            {editUser ? <><Pencil size={14}/> Edit {editUser.name}</> : <><UserPlus size={14}/> {isAdmin ? "New Manager" : "New Staff"}</>}
+            {editUser ? <><Pencil size={14}/> Edit {editUser.name}</> : <><UserPlus size={14}/> {isAdmin ? "New User" : "New Staff"}</>}
           </div>
           <input className="input" placeholder="Full name" value={form.name} onChange={e => setForm({ ...form, name:e.target.value })} />
           <input
@@ -249,11 +263,17 @@ export default function UserManagement({ user }) {
           <select
             className="input"
             value={form.role}
-            onChange={e => setForm({ ...form, role:e.target.value })}
-            disabled={!!editUser}
+            onChange={e => setForm({ ...form, role:e.target.value, manager_id:"" })}
+            disabled={!!editUser && !isAdmin}
           >
             {formRoles.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
+          {isAdmin && form.role !== "manager" && (
+            <select className="input" value={form.manager_id} onChange={e => setForm({ ...form, manager_id:e.target.value })}>
+              <option value="">No manager (unassigned)</option>
+              {managerOptions.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+          )}
           <input
             className="input"
             type="password"
@@ -265,7 +285,7 @@ export default function UserManagement({ user }) {
           />
           {!editUser && (
             <div className="text-muted" style={{ fontSize:"11px", marginBottom:"10px" }}>
-              {isAdmin ? "Managers sign in with this PIN and create their own cashier/waiter accounts." : "Staff sign in with this PIN."}
+              {isAdmin ? "Managers, cashiers and waiters can sign in with this PIN. Assign staff to a manager to scope their team." : "Staff sign in with this PIN."}
             </div>
           )}
           <div className="modal-actions">
@@ -279,7 +299,7 @@ export default function UserManagement({ user }) {
         <div className="card" style={{ textAlign:"center", color:"var(--muted)", padding:"26px 16px" }}>
           <Users size={22} style={{ marginBottom:"8px" }}/>
           <div style={{ fontSize:"13px" }}>
-            {users.length === 0 ? (isAdmin ? "No managers yet — add one to get started." : "No staff assigned to you yet.") : "No users match this search."}
+            {users.length === 0 ? (isAdmin ? "No users yet — add one to get started." : "No staff assigned to you yet.") : "No users match this search."}
           </div>
         </div>
       )}
