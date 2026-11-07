@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "./api";
 import { fmtKsh } from "./format";
 import { productImage, monogram } from "./menuImages";
-import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search, LayoutDashboard, MousePointerClick, ChevronUp } from "lucide-react";
+import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search, LayoutDashboard, MousePointerClick } from "lucide-react";
 
 
 /* ── SplitFields — standalone to prevent re-render keypad loss ─────────── */
@@ -660,10 +660,10 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
           </div>
         </div>
         {cart.length > 0 && !cartOpen && (
-          <button className="mobile-cart-bar" onClick={() => setCartOpen(true)}>
-            <span className="mcb-left"><ShoppingCart size={16}/> {cart.reduce((a,i) => a+i.quantity, 0)} item{cart.reduce((a,i) => a+i.quantity, 0) === 1 ? "" : "s"}</span>
-            <span className="mcb-total">{fmtKsh(total)}</span>
-            <span className="mcb-view">View <ChevronUp size={14}/></span>
+          <button className="cart-fab" onClick={() => setCartOpen(true)}
+            aria-label={`Open cart, ${cart.reduce((a,i) => a+i.quantity, 0)} items, ${fmtKsh(total)}`}>
+            <ShoppingCart size={22}/>
+            <span className="cart-fab-badge">{cart.reduce((a,i) => a+i.quantity, 0)}</span>
           </button>
         )}
         </>
