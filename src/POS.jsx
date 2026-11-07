@@ -93,6 +93,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const [receipt,         setReceipt]         = useState(null);
   const [view,            setView]            = useState("sales");
   const [cartOpen,        setCartOpen]        = useState(false);
+  const [nowTs,           setNowTs]           = useState(Date.now());
   const [showTableEdit,        setShowTableEdit]        = useState(false);
   const [showSubmittedPin,     setShowSubmittedPin]     = useState(false);
   const [submittedPinInput,    setSubmittedPinInput]    = useState("");
@@ -164,6 +165,13 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
+  useEffect(() => {
+    if (view !== "tables") return;
+    setNowTs(Date.now());
+    const t = setInterval(() => setNowTs(Date.now()), 30000);
+    return () => clearInterval(t);
+  }, [view]);
+
   const filteredProducts = products.filter(p => {
     const ms = p.name.toLowerCase().includes(search.toLowerCase());
     const mc = !selectedCat || p.category_id === parseInt(selectedCat);
@@ -192,6 +200,12 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   }).filter(Boolean));
 
   const total        = cart.reduce((s, i) => s + i.subtotal, 0);
+  const tableAgeMin  = (iso) => Math.max(0, Math.floor((nowTs - new Date(iso).getTime()) / 60000));
+  const fmtAge       = (m) => m < 1 ? "new" : m < 60 ? `${m}m` : m < 1440 ? `${Math.floor(m/60)}h ${String(m%60).padStart(2,"0")}m` : `${Math.floor(m/1440)}d`;
+  const ageTone      = (m) => m >= 60 ? "age-hot" : m >= 30 ? "age-warn" : "";
+  const initialsOf   = (n) => (n || "?").trim().split(/\s+/).map(s => s[0]).slice(0, 2).join("").toUpperCase();
+  const tablesValue  = pendingOrders.reduce((s, o) => s + (o.total || 0), 0);
+  const oldestMin    = pendingOrders.reduce((m, o) => Math.max(m, tableAgeMin(o.created_at)), 0);
   const resetPayment = () => setSplits([{ method: "cash", amount: "", ref: "" }]);
 
   const getNextTableNumber = () => {
@@ -396,7 +410,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   return (
     <div className="page pos-page">
       <div className="header">
-        <h2><ShoppingCart size={19}/> POS — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--accent-hi)"}}>Vendaura</span></h2>
+        <h2><ShoppingCart size={19} className="header-lead-icon"/> <span className="header-prefix">POS —</span> <span className="brand-lockup"><span className="brand-mark" aria-hidden="true"/> <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--accent-hi)"}}>Vendaura</span></span></h2>
         <div className="header-right">
           <span className="header-user"><User size={12}/> {user.name}</span>
           {onExit && <button className="btn btn-ghost btn-sm" onClick={onExit}><LayoutDashboard size={13}/> {exitLabel}</button>}
@@ -424,46 +438,70 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       {view === "tables" && (
         <div className="tables-view">
           {pendingOrders.length === 0 && !showTableEdit ? (
-            <div className="empty-state">
-              <div className="empty-icon"><Armchair size={40} strokeWidth={1.4}/></div>
+            <div className="empty-state table-empty">
+              <div className="empty-emblem" aria-hidden="true" />
+              <div className="empty-icon"><Armchair size={38} strokeWidth={1.3}/></div>
               <div className="empty-text">No active tables</div>
-              <div className="empty-sub">Go to Sales to start a new order</div>
+              <div className="empty-sub">Every tab is settled. Start a new order from Sales.</div>
+              <button className="btn btn-primary empty-cta" onClick={() => setView("sales")}><ShoppingCart size={14}/> Open Sales</button>
             </div>
           ) : (
             <>
               {pendingOrders.length > 0 && (
                 <>
-                  <div className="section-header">
+                  <div className="tables-summary">
+                    <div className="stat-tile">
+                      <span className="stat-label">Open tabs</span>
+                      <span className="stat-value">{pendingOrders.length}</span>
+                    </div>
+                    <div className="stat-tile">
+                      <span className="stat-label">Value on tables</span>
+                      <span className="stat-value">{fmtKsh(tablesValue)}</span>
+                    </div>
+                    <div className="stat-tile">
+                      <span className="stat-label">Oldest tab</span>
+                      <span className={`stat-value ${ageTone(oldestMin)}`}>{oldestMin < 1 ? "—" : fmtAge(oldestMin)}</span>
+                    </div>
+                  </div>
+
+                  <div className="section-head">
                     <span className="section-title">Awaiting Payment</span>
+                    <span className="laurel-rule" aria-hidden="true" />
                     <span className="section-count">{pendingOrders.length} tables</span>
                   </div>
+
                   <div className="filter-bubbles">
                     <button className={`bubble ${selectedWaiter==="all"?"bubble-active":""}`} onClick={() => setSelectedWaiter("all")}>
-                      <Users size={13}/> All ({pendingOrders.length})
+                      <Users size={13}/> All <span className="bubble-count">{pendingOrders.length}</span>
                     </button>
                     {[...new Set(pendingOrders.map(o => o.waiter_name))].map(w => (
                       <button key={w} className={`bubble ${selectedWaiter===w?"bubble-active":""}`} onClick={() => setSelectedWaiter(w)}>
-                        <User size={13}/> {w} ({pendingOrders.filter(o => o.waiter_name===w).length})
+                        <span className="waiter-avatar sm">{initialsOf(w)}</span>
+                        <span className="bubble-name">{w}</span>
+                        <span className="bubble-count">{pendingOrders.filter(o => o.waiter_name===w).length}</span>
                       </button>
                     ))}
                   </div>
                   <div className="table-grid">
-                    {pendingOrders.filter(o => selectedWaiter==="all" || o.waiter_name===selectedWaiter).map(o => (
+                    {pendingOrders.filter(o => selectedWaiter==="all" || o.waiter_name===selectedWaiter).map(o => {
+                      const mins = tableAgeMin(o.created_at);
+                      return (
                       <div key={o.id} className={`table-card ${activeOrder?.id===o.id?"table-card-active":""}`}>
                         <div className="table-card-body" onClick={() => loadOrder(o)}>
-                          <div className="table-card-header">
-                            <span className="table-number">{o.table_name}</span>
-                            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"3px"}}>
+                          <div className="table-top">
+                            <div className="table-id">
+                              <span className="table-number">{o.table_name}</span>
                               <span className="table-order">{o.order_number}</span>
-                              {o.status==="submitted" && <span style={{fontSize:"9px",background:"rgba(245,159,0,0.2)",color:"#f59f00",padding:"1px 6px",borderRadius:"99px",fontWeight:"700"}}>SUBMITTED</span>}
                             </div>
+                            <span className={`table-age ${ageTone(mins)}`}><Clock size={11}/> {fmtAge(mins)}</span>
                           </div>
-                          <div className="table-meta">
-                            <span><User size={11}/> {o.waiter_name}</span>
-                            <span><Clock size={11}/> {new Date(o.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</span>
+                          <div className="table-waiter">
+                            <span className="waiter-avatar">{initialsOf(o.waiter_name)}</span>
+                            <span className="waiter-name">{o.waiter_name}</span>
+                            {o.status==="submitted" && <span className="table-flag">Submitted</span>}
                           </div>
-                          <div className="table-meta">
-                            <span>{o.items?.length||0} items</span>
+                          <div className="table-total-row">
+                            <span className="table-items"><ClipboardList size={12}/> {o.items?.length||0} items</span>
                             <span className="table-total">{fmtKsh(o.total)}</span>
                           </div>
                         </div>
@@ -472,7 +510,8 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                           <button className="tbl-btn tbl-btn-submit" onClick={e => { e.stopPropagation(); loadOrder(o); setShowPayModal(true); }}><CreditCard size={13}/> Submit</button>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </>
               )}
