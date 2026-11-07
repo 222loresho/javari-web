@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "./api";
 import { fmtKsh } from "./format";
 import { productImage, monogram } from "./menuImages";
-import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search, LayoutDashboard } from "lucide-react";
+import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search, LayoutDashboard, MousePointerClick } from "lucide-react";
 
 
 /* ── SplitFields — standalone to prevent re-render keypad loss ─────────── */
@@ -83,6 +83,9 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const [search,          setSearch]          = useState("");
   const [selectedCat,     setSelectedCat]     = useState("");
   const [imgErrors,       setImgErrors]       = useState({});
+  const [clicks,          setClicks]          = useState(() => {
+    try { return JSON.parse(localStorage.getItem("product_clicks")) || {}; } catch { return {}; }
+  });
   const [pendingOrders,   setPendingOrders]   = useState([]);
   const [submittedOrders, setSubmittedOrders] = useState([]);
   const [activeOrder,     setActiveOrder]     = useState(null);
@@ -158,6 +161,11 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       if (ex) return prev.map(i => i.product_id === product.id
         ? { ...i, quantity: i.quantity + 1, subtotal: (i.quantity + 1) * i.price } : i);
       return [...prev, { product_id: product.id, product_name: product.name, price: product.price, quantity: 1, subtotal: product.price }];
+    });
+    setClicks(prev => {
+      const next = { ...prev, [product.id]: (prev[product.id] || 0) + 1 };
+      localStorage.setItem("product_clicks", JSON.stringify(next));
+      return next;
     });
   };
 
@@ -546,6 +554,11 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                   <div className="product-media">
                     {showPh && <span className="product-ph">{monogram(p.name)}</span>}
                     {img && !imgErrors[p.id] && <img src={img} alt="" loading="lazy" onError={() => setImgErrors(prev => ({ ...prev, [p.id]: true }))} />}
+                    {clicks[p.id] > 0 && (
+                      <span className="product-clicks" title={`Added ${clicks[p.id]} time${clicks[p.id] === 1 ? "" : "s"}`}>
+                        <MousePointerClick size={11}/> {clicks[p.id]}
+                      </span>
+                    )}
                     {p.stock === 0 && <span className="product-soldout">Out</span>}
                   </div>
                   <div className="product-body">
