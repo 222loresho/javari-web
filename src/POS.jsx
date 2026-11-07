@@ -379,7 +379,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const printReceipt = ()  => import("./print").then(m => m.printReceipt(receipt));
 
   return (
-    <div className="page">
+    <div className="page pos-page">
       <div className="header">
         <h2><ShoppingCart size={19}/> POS — <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--accent-hi)"}}>Vendaura</span></h2>
         <div className="header-right">
