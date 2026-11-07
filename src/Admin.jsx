@@ -2,7 +2,8 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import api from "./api";
 import { fmtKsh } from "./format";
 import { productImage, monogram } from "./menuImages";
-import { Settings, Package, Tags, BarChart3, CheckCircle2, Users, CalendarDays, TrendingUp, PackageSearch, BookOpen, ShoppingCart, LogOut, User, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Settings, Package, Tags, BarChart3, CheckCircle2, Users, CalendarDays, TrendingUp, PackageSearch, BookOpen, ShoppingCart, LogOut, User, Pencil, Trash2, AlertTriangle, Printer } from "lucide-react";
+import { getPaper, setPaper, printTest } from "./print";
 
 const ClearedBills   = lazy(() => import("./ClearedBills"));
 const MenuQR         = lazy(() => import("./MenuQR"));
@@ -22,6 +23,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
   const [newProduct,  setNewProduct]  = useState({ name:"", price:"", stock:"", category_id:"", image_url:"" });
   const [newCat,      setNewCat]      = useState("");
   const [imgErrors,   setImgErrors]   = useState({});
+  const [paper,       setPaperSize]   = useState(() => getPaper());
 
   const fetchProducts   = () => api.get("/products/").then(r => setProducts(r.data));
   const fetchCategories = () => api.get("/categories/").then(r => setCategories(r.data));
@@ -71,6 +73,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
     { id:"chart",      label:<><TrendingUp size={14}/> Revenue</> },
     { id:"lowstock",   label: lowCount > 0 ? <><AlertTriangle size={14}/> Stock ({lowCount})</> : <><AlertTriangle size={14}/> Stock</> },
     { id:"menu",       label:<><BookOpen size={14}/> Menu</> },
+    { id:"printing",   label:<><Printer size={14}/> Printing</> },
   ];
 
   return (
@@ -169,6 +172,26 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
               <div className="text-green text-bold">{fmtKsh(s.total)}</div>
             </div>
           ))}
+        </div>
+      )}
+
+      {tab === "printing" && (
+        <div style={{padding:"14px"}}>
+          <div className="card">
+            <div className="section-title" style={{padding:0,marginBottom:"6px"}}>Receipt paper</div>
+            <p className="text-muted" style={{fontSize:"12.5px",marginBottom:"12px"}}>Matches the roll in your thermal printer. Applied to every bill and receipt.</p>
+            <div className="filter-bubbles" style={{marginBottom:"14px"}}>
+              <button className={`bubble ${paper==="58"?"bubble-active":""}`} onClick={() => { setPaper("58"); setPaperSize("58"); setMessage("Paper Updated to 58 mm"); }}>58 mm · 32 cols</button>
+              <button className={`bubble ${paper==="80"?"bubble-active":""}`} onClick={() => { setPaper("80"); setPaperSize("80"); setMessage("Paper Updated to 80 mm"); }}>80 mm · 42 cols</button>
+            </div>
+            <button className="btn btn-primary full-btn" onClick={() => printTest()}><Printer size={14}/> Print test receipt</button>
+          </div>
+          <div className="card">
+            <div className="section-title" style={{padding:0,marginBottom:"8px"}}>Printer setup</div>
+            <p className="text-muted" style={{fontSize:"12.5px",lineHeight:1.65}}>
+              Install the printer with its own driver and set it as the system default. In the print dialog pick the printer, set Paper to the roll size above, Margins to None and Scale to 100%. Receipts print black on white at the roll width, so they never get scaled or clipped.
+            </p>
+          </div>
         </div>
       )}
 

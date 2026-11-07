@@ -578,6 +578,9 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
               <div className="bill-amount">{fmtKsh(o.total)}</div>
               {o.status==="confirmed" && o.confirmed_by && <div className="bill-confirmed-by" style={{display:"flex",alignItems:"center",gap:"4px"}}><CheckCircle2 size={12}/> Confirmed by {o.confirmed_by}</div>}
               {o.rejection_note && <div className="bill-rejected" style={{display:"flex",alignItems:"center",gap:"4px"}}><XCircle size={12}/> Rejected: {o.rejection_note}</div>}
+              <div className="bill-actions">
+                <button className="btn btn-ghost btn-sm" onClick={() => printBill(o)}><Printer size={13}/> Print bill</button>
+              </div>
             </div>
           ))}
         </div>

@@ -317,6 +317,7 @@ body {
 .bill-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;margin-bottom:12px;transition:all 0.2s;}
 .bill-card:hover{border-color:var(--border-mid);transform:translateY(-1px);box-shadow:var(--shadow-sm);}
 .bill-confirmed{border-color:rgba(127,214,164,0.3)!important;}
+.bill-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
 .bill-pending{border-color:rgba(47,191,113,0.28);}
 .bill-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
 .bill-id{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
