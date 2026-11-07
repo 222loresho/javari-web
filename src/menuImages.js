@@ -9,6 +9,19 @@ const strip = s =>
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 
+const HERO_SLUGS = new Set([
+  "bbq-bacon-burger", "butter-chicken", "chicken-and-rice", "chicken-tikka",
+  "chicken-wings", "dawa-cocktail", "fish-and-ugali", "goat-choma",
+  "grilled-chicken", "margarita", "masala-fries", "mushroom-soup",
+  "passion-mojito", "pina-colada", "samosas",
+  "gold-rush", "tequila-sunrise", "ranch-water", "screwdriver", "blue-lagoon",
+  "long-island", "whiskey-sour", "cuba-libre", "daiquiri", "cosmopolitan",
+  "old-fashioned", "gin-and-tonic", "bramble", "mint-julep", "gin-mule",
+  "negroni", "pink-lady", "brain-damage", "jagerbomb", "slippery-nipple",
+  "beef-sausages", "plain-chips", "poussin-chips", "chapati", "teriyaki",
+  "whitecap", "pork-dry-fry",
+]);
+
 const HERO_ALIASES = {
   "masala fries": "masala-fries",
   "masala chips": "masala-fries",
@@ -33,10 +46,23 @@ const HERO_ALIASES = {
   margarita: "margarita",
   "dawa cocktail": "dawa-cocktail",
   dawa: "dawa-cocktail",
+  "long island iced tea": "long-island",
+  "whiskey sours": "whiskey-sour",
+  "whiskey sour": "whiskey-sour",
+  diaquiri: "daiquiri",
+  daiquiri: "daiquiri",
+  "jager bomb": "jagerbomb",
+  "pork dry fry 500gms": "pork-dry-fry",
+  "pork dry fry": "pork-dry-fry",
+  "white cap": "whitecap",
+  "whitecap lager": "whitecap",
+  "gin and tonic": "gin-and-tonic",
+  "screw driver": "screwdriver",
 };
 
 export function heroImage(name) {
-  const slug = HERO_ALIASES[strip(name)];
+  const norm = strip(name);
+  const slug = HERO_ALIASES[norm] || (HERO_SLUGS.has(norm.replace(/ /g, "-")) ? norm.replace(/ /g, "-") : null);
   return slug ? `${HERO_BASE}${slug}.webp` : null;
 }
 
