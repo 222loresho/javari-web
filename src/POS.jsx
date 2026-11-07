@@ -605,14 +605,14 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                     <button className="qty-btn" onClick={() => updateQty(item.product_id,+1)}>+</button>
                     <button className="btn-icon text-sm" style={{marginLeft:"auto",color:item.note?"var(--green)":"var(--muted)"}}
                       onClick={() => { setNoteModal(item.product_id); setNoteText(item.note||""); }}
-                      title="Add note"><StickyNote size={14}/></button>
+                      title="Add note"><StickyNote size={16}/></button>
                     {(!activeOrder || user.role === "admin") && (
-                      <button className="btn-icon text-sm" onClick={() => removeFromCart(item.product_id)}><X size={15}/></button>
+                      <button className="btn-icon text-sm" onClick={() => removeFromCart(item.product_id)}><X size={16}/></button>
                     )}
                   </div>
                   {item.note && (
-                    <div style={{fontSize:"11px",color:"var(--green)",marginTop:"4px",fontStyle:"italic",paddingLeft:"2px",display:"flex",alignItems:"center",gap:"4px"}}>
-                      <StickyNote size={11}/> {item.note}
+                    <div style={{fontSize:"12px",color:"var(--green)",marginTop:"5px",fontStyle:"italic",paddingLeft:"2px",display:"flex",alignItems:"center",gap:"4px"}}>
+                      <StickyNote size={12}/> {item.note}
                     </div>
                   )}
                 </div>

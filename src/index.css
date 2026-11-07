@@ -152,7 +152,7 @@ body {
 .message-info{background:var(--accent-glow);color:var(--accent-hi);border:1px solid var(--border-hi);}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
 
-.pos-layout{display:grid;grid-template-columns:1fr 340px;height:calc(100dvh - 120px);min-height:420px;}
+.pos-layout{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);height:calc(100dvh - 120px);min-height:420px;}
 .pos-layout>div{min-height:0;}
 @media(max-width:900px){.pos-layout{grid-template-columns:1fr;height:auto;min-height:calc(100dvh - 120px);}}
 .page.pos-page{padding-bottom:0;}
@@ -185,19 +185,19 @@ body {
 .cart-panel{background:var(--surface);border-left:1px solid var(--border);border-top:1px solid var(--border);display:flex;flex-direction:column;min-height:0;overflow:hidden;position:relative;}
 .active-order-banner{background:linear-gradient(90deg,var(--accent-glow),transparent 70%);border-bottom:1px solid var(--border-mid);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;color:var(--accent-hi);flex-shrink:0;}
 .cart-body{flex:1;overflow-y:auto;min-height:0;overscroll-behavior:contain;}
-.cart-body .section-title{position:sticky;top:0;z-index:2;background:var(--surface);margin-bottom:0;padding-top:12px;padding-bottom:10px;}
-.cart-item{padding:11px 14px;border-bottom:1px solid var(--border);transition:background 0.15s;}
+.cart-body .section-title{position:sticky;top:0;z-index:2;background:var(--surface);margin-bottom:0;padding-top:14px;padding-bottom:12px;font-size:20px;}
+.cart-item{padding:14px 16px;border-bottom:1px solid var(--border);transition:background 0.15s;}
 .cart-item:hover{background:var(--card);}
-.cart-item-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
-.cart-item-name{font-size:13px;font-weight:500;}
-.cart-item-price{color:var(--accent-hi);font-weight:700;font-size:13px;}
-.cart-qty-row{display:flex;align-items:center;gap:8px;}
-.qty-btn{width:26px;height:26px;background:var(--card);border:1px solid var(--border-mid);border-radius:8px;cursor:pointer;color:var(--accent);font-size:16px;font-weight:bold;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.cart-item-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px;}
+.cart-item-name{font-size:15px;font-weight:500;line-height:1.35;}
+.cart-item-price{color:var(--accent-hi);font-weight:700;font-size:15px;white-space:nowrap;}
+.cart-qty-row{display:flex;align-items:center;gap:10px;}
+.qty-btn{width:32px;height:32px;background:var(--card);border:1px solid var(--border-mid);border-radius:9px;cursor:pointer;color:var(--accent);font-size:18px;font-weight:bold;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
 .qty-btn:hover{background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
-.qty-val{font-size:13px;font-weight:600;min-width:20px;text-align:center;font-variant-numeric:tabular-nums;}
-.cart-footer{padding:16px 14px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
-.total-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;font-weight:600;font-size:15px;}
-.total-amount{font-family:'Cormorant Garamond',serif;color:var(--accent-hi);font-weight:700;font-size:24px;letter-spacing:0.5px;font-variant-numeric:tabular-nums;}
+.qty-val{font-size:15px;font-weight:600;min-width:24px;text-align:center;font-variant-numeric:tabular-nums;}
+.cart-footer{padding:16px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.total-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;font-weight:600;font-size:16px;}
+.total-amount{font-family:'Cormorant Garamond',serif;color:var(--accent-hi);font-weight:700;font-size:27px;letter-spacing:0.5px;font-variant-numeric:tabular-nums;}
 
 .split-wrap{margin-bottom:12px;}
 .split-label{font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;}
