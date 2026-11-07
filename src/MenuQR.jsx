@@ -3,6 +3,7 @@ import QRCode from "qrcode";
 import {
   BookOpen, UtensilsCrossed, Wine, BedDouble, Info, ExternalLink,
   Download, Printer, Copy, Check, RefreshCw, WifiOff, Lightbulb, FileCode2,
+  Smartphone, Monitor, Link2,
 } from "lucide-react";
 
 const MENU_URL = "https://222loresho.github.io/QR-MENU/";
@@ -25,6 +26,7 @@ export default function MenuQR() {
   const [loading,    setLoading]    = useState(true);
   const [frameKey,   setFrameKey]   = useState(0);
   const [tableLabel, setTableLabel] = useState("");
+  const [device,     setDevice]     = useState("phone");
 
   useEffect(() => {
     QRCode.toDataURL(MENU_URL, { width: 640, margin: 2, color: QR_COLORS })
@@ -119,6 +121,8 @@ export default function MenuQR() {
 
       <div className="menu-workspace">
         <div className="menu-qr-tile">
+          <div className="menu-qr-brand">Vendaura</div>
+          <div className="menu-qr-rule" />
           {qrPng
             ? <img src={qrPng} alt="Menu QR code" />
             : <div className="menu-qr-placeholder" />}
@@ -128,6 +132,7 @@ export default function MenuQR() {
         <div className="menu-workspace-body">
           <div className="menu-label">Customer menu link</div>
           <div className="menu-link-row">
+            <Link2 size={14} className="menu-link-icon"/>
             <span className="menu-link">{MENU_URL}</span>
             <button className="btn btn-ghost btn-sm" onClick={copyLink} aria-label="Copy menu link">
               {copied ? <><Check size={13}/> Copied</> : <><Copy size={13}/> Copy</>}
@@ -177,6 +182,24 @@ export default function MenuQR() {
           <span className={`menu-dot ${online ? "" : "off"}`} />
           <span className="menu-preview-url">{page}</span>
           <div className="menu-preview-tools">
+            <div className="menu-device-toggle">
+              <button
+                className={device === "phone" ? "active" : ""}
+                aria-label="Phone preview"
+                aria-pressed={device === "phone"}
+                onClick={() => setDevice("phone")}
+              >
+                <Smartphone size={12}/>
+              </button>
+              <button
+                className={device === "wide" ? "active" : ""}
+                aria-label="Full-width preview"
+                aria-pressed={device === "wide"}
+                onClick={() => setDevice("wide")}
+              >
+                <Monitor size={12}/>
+              </button>
+            </div>
             <button
               className="btn btn-ghost btn-sm"
               aria-label="Reload preview"
@@ -190,7 +213,7 @@ export default function MenuQR() {
           </div>
         </div>
 
-        <div className="menu-preview-frame">
+        <div className={`menu-preview-frame ${device}`}>
           {!online ? (
             <div className="menu-preview-overlay">
               <WifiOff size={26}/>
