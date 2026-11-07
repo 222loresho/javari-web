@@ -410,7 +410,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   return (
     <div className="page pos-page">
       <div className="header">
-        <h2><ShoppingCart size={19} className="header-lead-icon"/> <span className="header-prefix">POS —</span> <span className="brand-lockup"><span className="brand-mark" aria-hidden="true"/> <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--accent-hi)"}}>Vendaura</span></span></h2>
+        <h2><span className="brand-lockup"><span className="brand-mark" aria-hidden="true"/> <span style={{fontFamily:"Cormorant Garamond,serif",color:"var(--accent-hi)"}}>Vendaura</span></span></h2>
         <div className="header-right">
           <span className="header-user"><User size={12}/> {user.name}</span>
           {onExit && <button className="btn btn-ghost btn-sm" onClick={onExit}><LayoutDashboard size={13}/> {exitLabel}</button>}
