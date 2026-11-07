@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "./api";
 import { fmtKsh } from "./format";
 import { productImage, monogram } from "./menuImages";
-import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search, LayoutDashboard, MousePointerClick } from "lucide-react";
+import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search, LayoutDashboard, MousePointerClick, ChevronUp } from "lucide-react";
 
 
 /* ── SplitFields — standalone to prevent re-render keypad loss ─────────── */
@@ -92,6 +92,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const [showPayModal,    setShowPayModal]    = useState(false);
   const [receipt,         setReceipt]         = useState(null);
   const [view,            setView]            = useState("sales");
+  const [cartOpen,        setCartOpen]        = useState(false);
   const [showTableEdit,        setShowTableEdit]        = useState(false);
   const [showSubmittedPin,     setShowSubmittedPin]     = useState(false);
   const [submittedPinInput,    setSubmittedPinInput]    = useState("");
@@ -148,6 +149,20 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
     const t = setTimeout(() => setMessage(""), 4000);
     return () => clearTimeout(t);
   }, [message]);
+
+  useEffect(() => {
+    if (!cartOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [cartOpen]);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 900px)");
+    const onChange = (e) => { if (!e.matches) setCartOpen(false); };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   const filteredProducts = products.filter(p => {
     const ms = p.name.toLowerCase().includes(search.toLowerCase());
@@ -299,7 +314,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       setMessage("Payment submitted! Awaiting cashier confirmation.");
       const sid = activeOrder.id;
       setPendingOrders(prev => prev.filter(o => o.id !== sid));
-      resetPayment(); setActiveOrder(null); setShowPayModal(false); setCart([]); setShowTableEdit(false);
+      resetPayment(); setActiveOrder(null); setShowPayModal(false); setCart([]); setCartOpen(false); setShowTableEdit(false);
       fetchProducts();
       setTimeout(() => fetchOrders(), 1500);
     } catch { setMessage("Submission failed!"); }
@@ -314,7 +329,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       const method = splits.length === 1 ? splits[0].method : "split";
       const res    = await api.post("/sales/", { items: cart, amount_paid: paid, payment_method: method, splits });
       setReceipt({ items: cart, total, amountPaid: paid, change: res.data.change_due, cashier: user.name, paymentMethod: method, splits, date: new Date().toLocaleString() });
-      setCart([]); resetPayment(); fetchProducts();
+      setCart([]); setCartOpen(false); resetPayment(); fetchProducts();
     } catch { setMessage("Sale failed!"); }
   };
 
@@ -530,6 +545,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       )}
 
       {view === "sales" && (
+        <>
         <div className="pos-layout">
           <div className="products-panel">
             <div className="search-bar">
@@ -572,7 +588,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
             </div>
           </div>
 
-          <div className="cart-panel">
+          <div className={`cart-panel ${cartOpen ? "cart-open" : ""}`}>
             {activeOrder && (
               <div className="active-order-banner">
                 <span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><ClipboardList size={14}/> {activeOrder.table_name} — {activeOrder.order_number}</span>
@@ -580,7 +596,10 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
               </div>
             )}
             <div className="cart-body">
-              <div className="section-title" style={{padding:"14px 14px 0"}}>Cart</div>
+              <div className="section-title" style={{padding:"14px 14px 0"}}>
+                Cart
+                <button className="btn-icon cart-mobile-close" onClick={() => setCartOpen(false)} aria-label="Close cart"><X size={18}/></button>
+              </div>
               {cart.length === 0 && (
                 <div className="empty-state" style={{padding:"24px"}}>
                   <div className="empty-icon"><ShoppingCart size={34} strokeWidth={1.4}/></div>
@@ -640,6 +659,14 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
             </div>
           </div>
         </div>
+        {cart.length > 0 && !cartOpen && (
+          <button className="mobile-cart-bar" onClick={() => setCartOpen(true)}>
+            <span className="mcb-left"><ShoppingCart size={16}/> {cart.reduce((a,i) => a+i.quantity, 0)} item{cart.reduce((a,i) => a+i.quantity, 0) === 1 ? "" : "s"}</span>
+            <span className="mcb-total">{fmtKsh(total)}</span>
+            <span className="mcb-view">View <ChevronUp size={14}/></span>
+          </button>
+        )}
+        </>
       )}
 
       {showPayModal && activeOrder && (
