@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import api from "./api";
 import { fmtKsh } from "./format";
+import { productImage, monogram } from "./menuImages";
 import { Settings, Package, Tags, BarChart3, CheckCircle2, Users, CalendarDays, TrendingUp, PackageSearch, BookOpen, ShoppingCart, LogOut, User, Pencil, Trash2, AlertTriangle } from "lucide-react";
 
 const ClearedBills   = lazy(() => import("./ClearedBills"));
@@ -18,7 +19,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
   const [message,     setMessage]     = useState("");
   const [editProduct, setEditProduct] = useState(null);
   const [lowCount,    setLowCount]    = useState(0);
-  const [newProduct,  setNewProduct]  = useState({ name:"", price:"", stock:"", category_id:"" });
+  const [newProduct,  setNewProduct]  = useState({ name:"", price:"", stock:"", category_id:"", image_url:"" });
   const [newCat,      setNewCat]      = useState("");
 
   const fetchProducts   = () => api.get("/products/").then(r => setProducts(r.data));
@@ -36,7 +37,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
     if (!newProduct.name || !newProduct.price) return setMessage("Name and price required");
     try {
       await api.post("/products/", { ...newProduct, category_id: newProduct.category_id || null });
-      setNewProduct({ name:"",price:"",stock:"",category_id:"" }); fetchProducts(); setMessage("Product added!");
+      setNewProduct({ name:"",price:"",stock:"",category_id:"",image_url:"" }); fetchProducts(); setMessage("Product added!");
     } catch(e) { setMessage(e.response?.data?.error || "Failed"); }
   };
 
@@ -99,6 +100,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
               <option value="">No Category</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+            <input className="input" placeholder="Photo URL (optional)" value={newProduct.image_url} onChange={e => setNewProduct({...newProduct,image_url:e.target.value})} />
             <button className="btn btn-primary full-btn" onClick={addProduct}>Add Product</button>
           </div>
           {editProduct && (
@@ -111,6 +113,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
                 <option value="">No Category</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+              <input className="input" placeholder="Photo URL (optional)" value={editProduct.image_url||""} onChange={e => setEditProduct({...editProduct,image_url:e.target.value})} />
               <div className="modal-actions">
                 <button className="btn btn-success" onClick={saveEdit}>Save</button>
                 <button className="btn btn-ghost"   onClick={() => setEditProduct(null)}>Cancel</button>
@@ -119,9 +122,15 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
           )}
           {products.map(p => (
             <div key={p.id} className="admin-item">
-              <div>
-                <div className="admin-item-name">{p.name}</div>
-                <div className="admin-item-sub">{fmtKsh(p.price)} | Stock: {p.stock} | {categories.find(c=>c.id===p.category_id)?.name||"No category"}</div>
+              <div className="admin-item-main">
+                <div className="admin-thumb">
+                  <span>{monogram(p.name)}</span>
+                  {productImage(p) && <img src={productImage(p)} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} />}
+                </div>
+                <div>
+                  <div className="admin-item-name">{p.name}</div>
+                  <div className="admin-item-sub">{fmtKsh(p.price)} | Stock: {p.stock} | {categories.find(c=>c.id===p.category_id)?.name||"No category"}</div>
+                </div>
               </div>
               <div className="admin-item-actions">
                 <button className="btn btn-ghost btn-sm"  aria-label={`Edit ${p.name}`} onClick={() => setEditProduct(p)}><Pencil size={13}/></button>

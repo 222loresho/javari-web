@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import api from "./api";
 import { fmtKsh } from "./format";
+import { productImage, monogram } from "./menuImages";
 import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search, LayoutDashboard } from "lucide-react";
 
 
@@ -536,13 +537,23 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                   <div className="empty-text">No products found</div>
                 </div>
               )}
-              {filteredProducts.map(p => (
+              {filteredProducts.map(p => {
+                const img = productImage(p);
+                return (
                 <div key={p.id} className="product-card" onClick={() => addToCart(p)}>
-                  <div className="product-name">{p.name}</div>
-                  <div className="product-price">{fmtKsh(p.price)}</div>
-                  <div className="product-stock"><span className={`stock-dot ${p.stock===0?"stock-out":p.stock<=5?"stock-low":"stock-ok"}`}/> {p.stock===0?"Out of stock":`${p.stock} in stock`}</div>
+                  <div className="product-media">
+                    <span className="product-ph">{monogram(p.name)}</span>
+                    {img && <img src={img} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} />}
+                    {p.stock === 0 && <span className="product-soldout">Out</span>}
+                  </div>
+                  <div className="product-body">
+                    <div className="product-name">{p.name}</div>
+                    <div className="product-price">{fmtKsh(p.price)}</div>
+                    <div className="product-stock"><span className={`stock-dot ${p.stock===0?"stock-out":p.stock<=5?"stock-low":"stock-ok"}`}/> {p.stock===0?"Out of stock":`${p.stock} in stock`}</div>
+                  </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
