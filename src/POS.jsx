@@ -12,7 +12,11 @@ function SplitFields({ splits, setSplits, orderTotal }) {
   const short  = orderTotal - paid;
   return (
     <div className="split-wrap">
-      <div className="split-label">Payment Method(s)</div>
+      <div className="split-label-row">
+        <span className="split-label">Payment Method(s)</span>
+        <button className="btn-link-add"
+          onClick={() => setSplits([...splits,{method:"cash",amount:"",ref:""}])}>+ Add method</button>
+      </div>
       {splits.map((split, idx) => (
         <div key={idx} className="split-row">
           <div className="split-top">
@@ -50,10 +54,6 @@ function SplitFields({ splits, setSplits, orderTotal }) {
           )}
         </div>
       ))}
-      <button className="btn-add-split"
-        onClick={() => setSplits([...splits,{method:"cash",amount:"",ref:""}])}>
-        + Add Payment Method
-      </button>
       <div className="split-total">
         Paid: <strong style={{color:paid>=orderTotal?"var(--green)":"var(--red)"}}>{fmtKsh(paid)}</strong> / {fmtKsh(orderTotal)}
         {change > 0 && <span style={{marginLeft:"10px",color:"var(--green)",fontWeight:"700"}}>Change: {fmtKsh(change.toFixed(0))}</span>}
@@ -623,17 +623,18 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                 <span>Total</span>
                 <span className="total-amount">{fmtKsh(total)}</span>
               </div>
-              {!activeOrder ? (
-                <button className="btn btn-secondary full-btn mb" onClick={saveTable}><Save size={14}/> Save Table</button>
-              ) : (
-                <button className="btn btn-outline-green full-btn mb" onClick={updateTable}><RefreshCw size={14}/> Update Table</button>
-              )}
               {activeOrder ? (
-                <button className="btn btn-primary full-btn" onClick={() => setShowPayModal(true)}><CreditCard size={14}/> Submit Payment</button>
+                <div className="cart-actions-row">
+                  <button className="btn btn-outline-green" onClick={updateTable}><RefreshCw size={14}/> Update Table</button>
+                  <button className="btn btn-primary" onClick={() => setShowPayModal(true)}><CreditCard size={14}/> Submit Payment</button>
+                </div>
               ) : (
                 <>
                   <SplitFields splits={splits} setSplits={setSplits} orderTotal={total} />
-                  <button className="btn btn-primary full-btn" onClick={handleCheckout}><BadgeCheck size={14}/> Complete Sale</button>
+                  <div className="cart-actions-row">
+                    <button className="btn btn-secondary" onClick={saveTable}><Save size={14}/> Save Table</button>
+                    <button className="btn btn-primary" onClick={handleCheckout}><BadgeCheck size={14}/> Complete Sale</button>
+                  </div>
                 </>
               )}
             </div>
