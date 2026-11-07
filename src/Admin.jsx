@@ -21,6 +21,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
   const [lowCount,    setLowCount]    = useState(0);
   const [newProduct,  setNewProduct]  = useState({ name:"", price:"", stock:"", category_id:"", image_url:"" });
   const [newCat,      setNewCat]      = useState("");
+  const [imgErrors,   setImgErrors]   = useState({});
 
   const fetchProducts   = () => api.get("/products/").then(r => setProducts(r.data));
   const fetchCategories = () => api.get("/categories/").then(r => setCategories(r.data));
@@ -120,12 +121,15 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
               </div>
             </div>
           )}
-          {products.map(p => (
+          {products.map(p => {
+            const img = productImage(p);
+            const showPh = !img || imgErrors[p.id];
+            return (
             <div key={p.id} className="admin-item">
               <div className="admin-item-main">
                 <div className="admin-thumb">
-                  <span>{monogram(p.name)}</span>
-                  {productImage(p) && <img src={productImage(p)} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} />}
+                  {showPh && <span>{monogram(p.name)}</span>}
+                  {img && !imgErrors[p.id] && <img src={img} alt="" loading="lazy" onError={() => setImgErrors(prev => ({ ...prev, [p.id]: true }))} />}
                 </div>
                 <div>
                   <div className="admin-item-name">{p.name}</div>
@@ -137,7 +141,8 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
                 <button className="btn btn-danger btn-sm" aria-label={`Delete ${p.name}`} onClick={() => deleteProduct(p.id)}><Trash2 size={13}/></button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

@@ -82,6 +82,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const [message,         setMessage]         = useState("");
   const [search,          setSearch]          = useState("");
   const [selectedCat,     setSelectedCat]     = useState("");
+  const [imgErrors,       setImgErrors]       = useState({});
   const [pendingOrders,   setPendingOrders]   = useState([]);
   const [submittedOrders, setSubmittedOrders] = useState([]);
   const [activeOrder,     setActiveOrder]     = useState(null);
@@ -539,11 +540,12 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
               )}
               {filteredProducts.map(p => {
                 const img = productImage(p);
+                const showPh = !img || imgErrors[p.id];
                 return (
                 <div key={p.id} className="product-card" onClick={() => addToCart(p)}>
                   <div className="product-media">
-                    <span className="product-ph">{monogram(p.name)}</span>
-                    {img && <img src={img} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = "none"; }} />}
+                    {showPh && <span className="product-ph">{monogram(p.name)}</span>}
+                    {img && !imgErrors[p.id] && <img src={img} alt="" loading="lazy" onError={() => setImgErrors(prev => ({ ...prev, [p.id]: true }))} />}
                     {p.stock === 0 && <span className="product-soldout">Out</span>}
                   </div>
                   <div className="product-body">
