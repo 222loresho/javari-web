@@ -109,6 +109,10 @@ export function printTest() {
 function openPrint(rows, p) {
   const win = window.open("", "_blank", "width=420,height=650");
   if (!win) { alert("Please allow pop-ups to print."); return; }
+  // Courier New advances 0.6em; centre the fixed-width block inside the roll so
+  // no column lands in the print head's non-printable edge.
+  const textMm = (p.chars * p.fs * 0.6 / 96) * 25.4;
+  const sideMm = Math.max(0, Math.round(((p.mm - textMm) / 2) * 100) / 100);
   const content = rows.join("\n").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   win.document.write(`<!DOCTYPE html>
 <html>
@@ -118,13 +122,14 @@ function openPrint(rows, p) {
   <style>
     @page{size:${p.mm}mm auto;margin:0;}
     html,body{margin:0;padding:0;background:#fff;color:#000;}
-    body{width:${p.mm}mm;box-sizing:border-box;padding:2mm 2mm 6mm;font-family:"Courier New",Courier,monospace;font-size:${p.fs}px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    body{width:${p.mm}mm;box-sizing:border-box;padding:2mm 0 6mm;font-family:"Courier New",Courier,monospace;font-size:${p.fs}px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    .t{margin-left:${sideMm}mm;}
     .mark{display:flex;justify-content:center;white-space:normal;margin:0 0 1.5mm;}
     .mark svg{width:9mm;height:9mm;}
-    @media print{body{padding:2mm 2mm 6mm;}}
+    @media print{body{padding:2mm 0 6mm;}}
   </style>
 </head>
-<body><div class="mark">${MARK}</div>${content}</body>
+<body><div class="mark">${MARK}</div><div class="t">${content}</div></body>
 </html>`);
   win.document.close();
   const go = () => { try { win.focus(); win.print(); } catch {} };
