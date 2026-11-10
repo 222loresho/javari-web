@@ -654,9 +654,6 @@ export default function SuperAdmin({ user, onLogout }) {
                   <input className="sa-input" type="password" inputMode="numeric" autoComplete="new-password" placeholder="4-digit PIN" value={userForm.pin} onChange={e=>setUserForm({...userForm,pin:e.target.value.replace(/\D/g,"").slice(0,4)})}/>
                   <select className="sa-input" value={userForm.role} onChange={e=>setUserForm({...userForm,role:e.target.value,market_id:e.target.value==="super_admin"?"":userForm.market_id})}>
                     <option value="admin">⚙️ Admin</option>
-                    <option value="manager">🧑‍💼 Manager</option>
-                    <option value="cashier">💰 Cashier</option>
-                    <option value="waiter">🤵 Waiter</option>
                     <option value="super_admin">👑 Super Admin</option>
                   </select>
                   {userForm.role !== "super_admin" && (

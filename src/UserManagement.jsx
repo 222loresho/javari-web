@@ -61,6 +61,7 @@ export default function UserManagement({ user }) {
     if (!form.username.trim()) return setMessage("Username is required");
     if (!editUser && !form.pin) return setMessage("PIN is required");
     if (form.pin && !/^\d{4}$/.test(form.pin)) return setMessage("PIN must be exactly 4 digits");
+    if (form.role !== "manager" && !form.manager_id) return setMessage("Assign this staff member to a manager");
     setBusy(true);
     try {
       if (editUser) {
@@ -172,7 +173,9 @@ export default function UserManagement({ user }) {
   };
 
   const formRoles = isAdmin
-    ? [{ value:"manager", label:"Manager" }, { value:"cashier", label:"Cashier" }, { value:"waiter", label:"Waiter" }]
+    ? (editUser
+        ? [{ value:"manager", label:"Manager" }, { value:"cashier", label:"Cashier" }, { value:"waiter", label:"Waiter" }]
+        : [{ value:"manager", label:"Manager" }])
     : [{ value:"cashier", label:"Cashier" }, { value:"waiter", label:"Waiter" }];
 
   const managerOptions = users.filter(u => u.role === "manager");
@@ -188,7 +191,7 @@ export default function UserManagement({ user }) {
             <KeyRound size={13}/> Change my PIN
           </button>
           <button className="btn btn-primary btn-sm" onClick={() => { resetForm(); setShowForm(!showForm); }}>
-            {showForm && !editUser ? <><X size={13}/> Cancel</> : <><UserPlus size={13}/> {isAdmin ? "Add User" : "Add Staff"}</>}
+            {showForm && !editUser ? <><X size={13}/> Cancel</> : <><UserPlus size={13}/> {isAdmin ? "Add Manager" : "Add Staff"}</>}
           </button>
         </div>
       </div>
@@ -250,7 +253,7 @@ export default function UserManagement({ user }) {
       {showForm && (
         <div className="card" style={{ border:"1px solid var(--accent)", marginBottom:"16px" }}>
           <div className="section-title" style={{ padding:0, marginBottom:"12px" }}>
-            {editUser ? <><Pencil size={14}/> Edit {editUser.name}</> : <><UserPlus size={14}/> {isAdmin ? "New User" : "New Staff"}</>}
+            {editUser ? <><Pencil size={14}/> Edit {editUser.name}</> : <><UserPlus size={14}/> {isAdmin ? "New Manager" : "New Staff"}</>}
           </div>
           <input className="input" placeholder="Full name" value={form.name} onChange={e => setForm({ ...form, name:e.target.value })} />
           <input
@@ -270,7 +273,7 @@ export default function UserManagement({ user }) {
           </select>
           {isAdmin && form.role !== "manager" && (
             <select className="input" value={form.manager_id} onChange={e => setForm({ ...form, manager_id:e.target.value })}>
-              <option value="">No manager (unassigned)</option>
+              <option value="">Select manager…</option>
               {managerOptions.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
           )}
@@ -285,7 +288,7 @@ export default function UserManagement({ user }) {
           />
           {!editUser && (
             <div className="text-muted" style={{ fontSize:"11px", marginBottom:"10px" }}>
-              {isAdmin ? "Managers, cashiers and waiters can sign in with this PIN. Assign staff to a manager to scope their team." : "Staff sign in with this PIN."}
+              {isAdmin ? "Managers sign in with this PIN and add their own cashiers and waiters." : "Staff sign in with this PIN under your team."}
             </div>
           )}
           <div className="modal-actions">
