@@ -8,7 +8,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "auto",
-      includeAssets: ["favicon.svg", "logo.svg"],
+      includeAssets: ["favicon.svg", "app-icon-192.png", "app-icon-512.png", "app-icon-maskable-512.png"],
       manifest: {
         name: "Vendaura POS",
         short_name: "Vendaura",
@@ -19,8 +19,9 @@ export default defineConfig({
         start_url: "/javari-web/",
         scope: "/javari-web/",
         icons: [
-          { src: "logo.png", sizes: "192x192", type: "image/png", purpose: "any" },
-          { src: "logo.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "app-icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "app-icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "app-icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
           { src: "logo.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
         ],
       },
