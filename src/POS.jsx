@@ -192,6 +192,11 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
     });
   };
 
+  const resetClicks = () => {
+    setClicks({});
+    localStorage.removeItem("product_clicks");
+  };
+
   const removeFromCart = (id) => setCart(c => c.filter(i => i.product_id !== id));
   const updateQty = (id, delta) => setCart(c => c.map(i => {
     if (i.product_id !== id) return i;
@@ -281,6 +286,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         total
       });
       printOrder({ order_number: res.data.order_number, table_name: name, waiter_name: user.name, created_at: new Date().toISOString(), items: cart, total });
+      resetClicks();
       setMessage(`Saved as ${name}!`);
       setCart([]); setActiveOrder(null); setShowPinModal(false); fetchOrders();
     } catch { setMessage("Failed to save table"); }
@@ -295,6 +301,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         total
       });
       printOrder({ order_number: activeOrder.order_number, table_name: activeOrder.table_name, waiter_name: user.name, created_at: new Date().toISOString(), items: cart, total });
+      resetClicks();
       if (wasSubmitted) {
         setCart([]); setActiveOrder(null); setShowTableEdit(false);
         setMessage(`${activeOrder.table_name} updated — logging out`);
@@ -346,6 +353,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       const res    = await api.post("/sales/", { items: cart, amount_paid: paid, payment_method: method, splits });
       const r      = { items: cart, total, amountPaid: paid, change: res.data.change_due, cashier: user.name, paymentMethod: method, splits, date: new Date().toLocaleString() };
       setReceipt(r);
+      resetClicks();
       setCart([]); setCartOpen(false); resetPayment(); fetchProducts();
       import("./print").then(m => m.printReceipt(r));
     } catch { setMessage("Sale failed!"); }
