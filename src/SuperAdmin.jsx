@@ -134,7 +134,7 @@ export default function SuperAdmin({ user, onLogout }) {
   const [showForm,    setShowForm]    = useState(false);
   const [editItem,    setEditItem]    = useState(null);
   const [form,        setForm]        = useState(blankMarket());
-  const [userForm,    setUserForm]    = useState({ name:"",username:"",pin:"",role:"admin" });
+  const [userForm,    setUserForm]    = useState({ name:"",username:"",pin:"",role:"admin",market_id:"" });
   const [showUForm,   setShowUForm]   = useState(false);
   const [search,      setSearch]      = useState("");
   const [filterStatus,setFilterStatus]= useState("all");
@@ -204,10 +204,14 @@ export default function SuperAdmin({ user, onLogout }) {
   const saveUser = async () => {
     if (!userForm.name||!userForm.username||!userForm.pin) return toast("All fields required","error");
     if (!/^\d{4}$/.test(userForm.pin)) return toast("PIN must be 4 digits","error");
+    if (userForm.role !== "super_admin" && !userForm.market_id) return toast("Select a venue for this account","error");
     try {
-      await api.post("/superadmin/users", userForm);
+      await api.post("/superadmin/users", {
+        ...userForm,
+        market_id: userForm.role === "super_admin" ? null : Number(userForm.market_id),
+      });
       toast("User created!"); setShowUForm(false);
-      setUserForm({ name:"",username:"",pin:"",role:"admin" }); fetchAll();
+      setUserForm({ name:"",username:"",pin:"",role:"admin",market_id:"" }); fetchAll();
     } catch(e) { toast(e.response?.data?.error||"Failed","error"); }
   };
 
@@ -648,13 +652,19 @@ export default function SuperAdmin({ user, onLogout }) {
                   <input className="sa-input" placeholder="Full Name" value={userForm.name} onChange={e=>setUserForm({...userForm,name:e.target.value})}/>
                   <input className="sa-input" placeholder="Username (lowercase)" value={userForm.username} onChange={e=>setUserForm({...userForm,username:e.target.value.toLowerCase()})}/>
                   <input className="sa-input" type="password" inputMode="numeric" autoComplete="new-password" placeholder="4-digit PIN" value={userForm.pin} onChange={e=>setUserForm({...userForm,pin:e.target.value.replace(/\D/g,"").slice(0,4)})}/>
-                  <select className="sa-input" value={userForm.role} onChange={e=>setUserForm({...userForm,role:e.target.value})}>
+                  <select className="sa-input" value={userForm.role} onChange={e=>setUserForm({...userForm,role:e.target.value,market_id:e.target.value==="super_admin"?"":userForm.market_id})}>
                     <option value="admin">⚙️ Admin</option>
                     <option value="manager">🧑‍💼 Manager</option>
                     <option value="cashier">💰 Cashier</option>
                     <option value="waiter">🤵 Waiter</option>
                     <option value="super_admin">👑 Super Admin</option>
                   </select>
+                  {userForm.role !== "super_admin" && (
+                    <select className="sa-input" value={userForm.market_id} onChange={e=>setUserForm({...userForm,market_id:e.target.value})}>
+                      <option value="">Select venue…</option>
+                      {markets.map(m => <option key={m.id} value={m.id}>{m.name}{m.location?` — ${m.location}`:""}</option>)}
+                    </select>
+                  )}
                   <div style={{display:"flex",gap:"10px"}}>
                     <button className="sa-btn" onClick={saveUser} style={{flex:1,justifyContent:"center",background:"rgba(201,168,76,0.15)",color:"#c9a84c",border:"1px solid rgba(201,168,76,0.35)"}}>Create User</button>
                     <button className="sa-btn" onClick={()=>setShowUForm(false)} style={{background:"rgba(255,255,255,0.04)",color:"#94a3b8",border:"1px solid rgba(255,255,255,0.08)"}}>Cancel</button>
@@ -676,7 +686,7 @@ export default function SuperAdmin({ user, onLogout }) {
                           <span style={{fontSize:"10px",fontWeight:"700",padding:"2px 8px",borderRadius:"99px",background:`${rm.color}18`,color:rm.color,border:`1px solid ${rm.color}33`,textTransform:"uppercase"}}>{rm.label}</span>
                           {!u.active&&<span style={{fontSize:"10px",color:"#5c5870",background:"rgba(92,88,112,0.15)",padding:"2px 6px",borderRadius:"99px"}}>INACTIVE</span>}
                         </div>
-                        <div style={{fontSize:"12px",color:"#5c5870",marginTop:"3px"}}>@{u.username}</div>
+                        <div style={{fontSize:"12px",color:"#5c5870",marginTop:"3px"}}>@{u.username}{u.market_name?` · ${u.market_name}`:u.role==="super_admin"?" · Platform":" · No venue"}</div>
                       </div>
                     </div>
                   );
