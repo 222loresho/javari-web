@@ -61,7 +61,7 @@ export default function UserManagement({ user }) {
     if (!form.username.trim()) return setMessage("Username is required");
     if (!editUser && !form.pin) return setMessage("PIN is required");
     if (form.pin && !/^\d{4}$/.test(form.pin)) return setMessage("PIN must be exactly 4 digits");
-    if (form.role !== "manager" && !form.manager_id) return setMessage("Assign this staff member to a manager");
+    if (isAdmin && form.role !== "manager" && !form.manager_id) return setMessage("Assign this staff member to a manager");
     setBusy(true);
     try {
       if (editUser) {
