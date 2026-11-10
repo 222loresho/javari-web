@@ -274,12 +274,13 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const confirmSaveTable = async () => {
     const name = `Table ${getNextTableNumber()}`;
     try {
-      await api.post("/orders/", {
+      const res = await api.post("/orders/", {
         table_name:  name,
         waiter_name: user.name,
         items: cart.map(i => ({ product_id: i.product_id, product_name: i.product_name, quantity: i.quantity, price: i.price, subtotal: i.subtotal, note: i.note||"" })),
         total
       });
+      printOrder({ order_number: res.data.order_number, table_name: name, waiter_name: user.name, created_at: new Date().toISOString(), items: cart, total });
       setMessage(`Saved as ${name}!`);
       setCart([]); setActiveOrder(null); setShowPinModal(false); fetchOrders();
     } catch { setMessage("Failed to save table"); }
@@ -293,6 +294,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         items: cart.map(i => ({ product_id: i.product_id, product_name: i.product_name, quantity: i.quantity, price: i.price, subtotal: i.subtotal, note: i.note||"" })),
         total
       });
+      printOrder({ order_number: activeOrder.order_number, table_name: activeOrder.table_name, waiter_name: user.name, created_at: new Date().toISOString(), items: cart, total });
       if (wasSubmitted) {
         setCart([]); setActiveOrder(null); setShowTableEdit(false);
         setMessage(`${activeOrder.table_name} updated — logging out`);
@@ -407,6 +409,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   };
 
   const printBill    = (o) => import("./print").then(m => m.printBill(o));
+  const printOrder   = (o) => import("./print").then(m => m.printOrder(o));
   const printReceipt = ()  => import("./print").then(m => m.printReceipt(receipt));
 
   return (

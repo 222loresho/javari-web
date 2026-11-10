@@ -44,8 +44,34 @@ export function printBill(order) {
   openPrint(rows, p);
 }
 
-export function printReceipt(receipt) {
+export function printOrder(order) {
   const p = PAPERS[getPaper()];
+  const w = p.chars;
+  const rows = [
+    center(STORE.name, w),
+    center(STORE.address, w),
+    line(w),
+    pad("ORDER:", order.order_number || "", w),
+    pad("Table:", order.table_name || "", w),
+    pad("Waiter:", order.waiter_name || "", w),
+    pad("Time:", new Date(order.created_at || Date.now()).toLocaleString("en-KE"), w),
+    line(w),
+    "ITEMS:",
+    ...order.items.flatMap(i => [
+      `${i.quantity} x ${i.product_name}`,
+      ...(i.note ? [`    >> ${i.note}`] : []),
+    ]),
+    line(w),
+    pad("TOTAL:", `KSh ${order.total}`, w),
+    line(w),
+    center("Show this slip at the counter", w),
+    center("to collect the items.", w),
+    "",
+  ];
+  openPrint(rows, p);
+}
+
+export function printReceipt(receipt) {  const p = PAPERS[getPaper()];
   const w = p.chars;
   const splits   = receipt.splits || [];
   const payLines = splits.length > 0
