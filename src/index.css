@@ -399,16 +399,6 @@ body {
 }
 .pin-label{font-size:11px;color:var(--muted);margin-bottom:12px;text-align:center;letter-spacing:2px;text-transform:uppercase;}
 
-.login-id-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;}
-.login-id-row .input{margin-bottom:0;}
-.login-id-row .login-code{flex:0 0 84px;width:84px;text-align:center;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
-.login-id-row .login-user{flex:1 1 auto;min-width:0;}
-.login-id-row .login-dash{flex:0 0 auto;color:var(--muted);font-size:15px;line-height:40px;user-select:none;}
-@media (max-width:420px){
-  .login-id-row{gap:6px;}
-  .login-id-row .login-code{flex-basis:70px;width:70px;}
-}
-
 .pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:22px;}
 .pin-dot{width:56px;height:56px;border:1.5px solid var(--border-mid);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;background:var(--card);color:var(--accent);transition:all 0.2s;}
 .pin-dot.filled{border-color:var(--accent);box-shadow:0 0 14px rgba(47,191,113,0.35),inset 0 0 8px rgba(47,191,113,0.12);background:var(--card-hover);}

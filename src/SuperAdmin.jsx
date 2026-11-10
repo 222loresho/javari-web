@@ -452,7 +452,7 @@ export default function SuperAdmin({ user, onLogout }) {
                     <input className="sa-input" style={{gridColumn:"1/-1"}} placeholder="Restaurant / Business name *" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
                     {editItem && (
                       <div style={{gridColumn:"1/-1",fontSize:"12px",color:"#94a3b8",padding:"2px 2px 10px"}}>
-                        Login code <span style={{fontWeight:"700",letterSpacing:"1.5px",color:"#c9a84c"}}>{editItem.code}</span> — permanent, staff enter it before their username.
+                        Login code <span style={{fontWeight:"700",letterSpacing:"1.5px",color:"#c9a84c"}}>{editItem.code}</span> — generated automatically and permanent. Staff sign in with only their username and PIN.
                       </div>
                     )}
                     <input className="sa-input" placeholder="City / Location" value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/>

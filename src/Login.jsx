@@ -3,7 +3,6 @@ import api from "./api";
 import { BookOpen } from "lucide-react";
 
 export default function Login({ onLogin }) {
-  const [code,     setCode]     = useState(() => localStorage.getItem("venue_code") || "");
   const [username, setUsername] = useState("");
   const [pin,      setPin]      = useState("");
   const [error,    setError]    = useState("");
@@ -11,18 +10,15 @@ export default function Login({ onLogin }) {
 
   const doLogin = async (pinValue) => {
     if (!username.trim()) { setError("Enter your username first"); return; }
-    const venue = code.trim().toUpperCase();
     setLoading(true); setError("");
     try {
       const res = await api.post("/auth/pin-login", {
         username: username.trim().toLowerCase(),
-        pin: pinValue,
-        code: venue
+        pin: pinValue
       });
       localStorage.setItem("token",   res.data.token);
       localStorage.setItem("user",    JSON.stringify(res.data.user));
       localStorage.setItem("pinlen",  String(res.data.pin_length || 4));
-      if (venue) localStorage.setItem("venue_code", venue);
       localStorage.removeItem("userpin");
       onLogin(res.data.user);
     } catch (e) {
@@ -61,16 +57,9 @@ export default function Login({ onLogin }) {
           <img src="/javari-web/logo.svg" alt="Vendaura" className="login-logo" />
         </div>
         <div className="login-form">
-          <div className="login-id-row">
-            <input className="input login-code" placeholder="CODE" value={code}
-              onChange={e => { setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)); setError(""); }}
-              autoCapitalize="characters" autoComplete="off" autoCorrect="off" spellCheck={false}
-              aria-label="Venue code" maxLength={8} />
-            <span className="login-dash" aria-hidden="true">–</span>
-            <input className="input login-user" placeholder="Username" value={username}
-              onChange={e => { setUsername(e.target.value); setError(""); }}
-              autoCapitalize="none" autoComplete="off" autoCorrect="off" />
-          </div>
+          <input className="input login-user" placeholder="Username" value={username}
+            onChange={e => { setUsername(e.target.value); setError(""); }}
+            autoCapitalize="none" autoComplete="off" autoCorrect="off" />
           <div className="pin-label">Enter Your PIN</div>
           <div className="pin-dots">
             {[0,1,2,3].map(i => (
