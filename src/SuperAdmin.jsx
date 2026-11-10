@@ -143,7 +143,7 @@ export default function SuperAdmin({ user, onLogout }) {
   const [sortBy,      setSortBy]      = useState("created");
 
   function blankMarket() {
-    return { name:"",location:"",contact_name:"",contact_email:"",
+    return { name:"",code:"",location:"",contact_name:"",contact_email:"",
              contact_phone:"",plan:"trial",monthly_fee:"",currency:"KES",
              status:"trial",api_url:"",notes:"" };
   }
@@ -449,6 +449,7 @@ export default function SuperAdmin({ user, onLogout }) {
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#c9a84c",marginBottom:"16px",display:"flex",alignItems:"center",gap:"8px"}}>{editItem?<><Pencil size={15}/> Edit Market</>:<><Plus size={15}/> New Market</>}</div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 12px"}}>
                     <input className="sa-input" style={{gridColumn:"1/-1"}} placeholder="Restaurant / Business name *" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
+                    <input className="sa-input" style={{gridColumn:"1/-1"}} placeholder="Login code for staff, e.g. FRE (blank = auto)" value={form.code} onChange={e=>setForm({...form,code:e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)})}/>
                     <input className="sa-input" placeholder="City / Location" value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/>
                     <input className="sa-input" placeholder="Contact person" value={form.contact_name} onChange={e=>setForm({...form,contact_name:e.target.value})}/>
                     <input className="sa-input" placeholder="Email address" value={form.contact_email} onChange={e=>setForm({...form,contact_email:e.target.value})}/>
@@ -512,6 +513,7 @@ export default function SuperAdmin({ user, onLogout }) {
                         <div style={{display:"flex",alignItems:"center",gap:"8px",flexWrap:"wrap",marginBottom:"4px"}}>
                           <span style={{fontWeight:"700",fontSize:"16px"}}>{m.name}</span>
                           <span style={{fontSize:"10px",fontWeight:"700",padding:"2px 10px",borderRadius:"99px",background:pm.bg,color:pm.color,textTransform:"uppercase",letterSpacing:"0.5px"}}>{pm.label}</span>
+                          {m.code && <span style={{fontSize:"10px",fontWeight:"700",padding:"2px 8px",borderRadius:"6px",background:"rgba(255,255,255,0.05)",color:"#94a3b8",letterSpacing:"1px"}}>{m.code}</span>}
                           <span style={{fontSize:"10px",fontWeight:"700",padding:"2px 10px",borderRadius:"99px",background:sm.bg,color:sm.color}}>{sm.icon} {m.status}</span>
                         </div>
                         <div style={{fontSize:"12px",color:"#5c5870"}}>{m.location||"No location"}{m.contact_name?` · ${m.contact_name}`:""}</div>

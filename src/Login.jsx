@@ -3,6 +3,7 @@ import api from "./api";
 import { BookOpen } from "lucide-react";
 
 export default function Login({ onLogin }) {
+  const [code,     setCode]     = useState(() => localStorage.getItem("venue_code") || "");
   const [username, setUsername] = useState("");
   const [pin,      setPin]      = useState("");
   const [error,    setError]    = useState("");
@@ -10,15 +11,18 @@ export default function Login({ onLogin }) {
 
   const doLogin = async (pinValue) => {
     if (!username.trim()) { setError("Enter your username first"); return; }
+    const venue = code.trim().toUpperCase();
     setLoading(true); setError("");
     try {
       const res = await api.post("/auth/pin-login", {
         username: username.trim().toLowerCase(),
-        pin: pinValue
+        pin: pinValue,
+        code: venue
       });
       localStorage.setItem("token",   res.data.token);
       localStorage.setItem("user",    JSON.stringify(res.data.user));
       localStorage.setItem("pinlen",  String(res.data.pin_length || 4));
+      if (venue) localStorage.setItem("venue_code", venue);
       localStorage.removeItem("userpin");
       onLogin(res.data.user);
     } catch (e) {
@@ -57,6 +61,9 @@ export default function Login({ onLogin }) {
           <img src="/javari-web/logo.svg" alt="Vendaura" className="login-logo" />
         </div>
         <div className="login-form">
+          <input className="input" placeholder="Venue code (e.g. FRE)" value={code}
+            onChange={e => { setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)); setError(""); }}
+            autoCapitalize="characters" autoComplete="off" autoCorrect="off" spellCheck={false} />
           <input className="input" placeholder="Username" value={username}
             onChange={e => { setUsername(e.target.value); setError(""); }}
             autoCapitalize="none" autoComplete="off" autoCorrect="off" />
