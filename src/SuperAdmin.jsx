@@ -143,7 +143,7 @@ export default function SuperAdmin({ user, onLogout }) {
   const [sortBy,      setSortBy]      = useState("created");
 
   function blankMarket() {
-    return { name:"",code:"",location:"",contact_name:"",contact_email:"",
+    return { name:"",location:"",contact_name:"",contact_email:"",
              contact_phone:"",plan:"trial",monthly_fee:"",currency:"KES",
              status:"trial",api_url:"",notes:"" };
   }
@@ -163,9 +163,10 @@ export default function SuperAdmin({ user, onLogout }) {
   /* ── Market actions ─────────────────────────────────────────────────── */
   const saveMarket = async () => {
     if (!form.name.trim()) return toast("Market name required","error");
+    const { code, ...payload } = form;
     try {
-      if (editItem) await api.put(`/superadmin/markets/${editItem.id}`, form);
-      else          await api.post("/superadmin/markets", form);
+      if (editItem) await api.put(`/superadmin/markets/${editItem.id}`, payload);
+      else          await api.post("/superadmin/markets", payload);
       toast(`Market ${editItem?"updated":"created"}!`);
       setShowForm(false); setEditItem(null); setForm(blankMarket()); fetchAll();
     } catch(e) { toast(e.response?.data?.error||"Failed","error"); }
@@ -449,7 +450,11 @@ export default function SuperAdmin({ user, onLogout }) {
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"20px",color:"#c9a84c",marginBottom:"16px",display:"flex",alignItems:"center",gap:"8px"}}>{editItem?<><Pencil size={15}/> Edit Market</>:<><Plus size={15}/> New Market</>}</div>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 12px"}}>
                     <input className="sa-input" style={{gridColumn:"1/-1"}} placeholder="Restaurant / Business name *" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
-                    <input className="sa-input" style={{gridColumn:"1/-1"}} placeholder="Login code for staff, e.g. FRE (blank = auto)" value={form.code} onChange={e=>setForm({...form,code:e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)})}/>
+                    {editItem && (
+                      <div style={{gridColumn:"1/-1",fontSize:"12px",color:"#94a3b8",padding:"2px 2px 10px"}}>
+                        Login code <span style={{fontWeight:"700",letterSpacing:"1.5px",color:"#c9a84c"}}>{editItem.code}</span> — permanent, staff enter it before their username.
+                      </div>
+                    )}
                     <input className="sa-input" placeholder="City / Location" value={form.location} onChange={e=>setForm({...form,location:e.target.value})}/>
                     <input className="sa-input" placeholder="Contact person" value={form.contact_name} onChange={e=>setForm({...form,contact_name:e.target.value})}/>
                     <input className="sa-input" placeholder="Email address" value={form.contact_email} onChange={e=>setForm({...form,contact_email:e.target.value})}/>

@@ -61,12 +61,16 @@ export default function Login({ onLogin }) {
           <img src="/javari-web/logo.svg" alt="Vendaura" className="login-logo" />
         </div>
         <div className="login-form">
-          <input className="input" placeholder="Venue code (e.g. FRE)" value={code}
-            onChange={e => { setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)); setError(""); }}
-            autoCapitalize="characters" autoComplete="off" autoCorrect="off" spellCheck={false} />
-          <input className="input" placeholder="Username" value={username}
-            onChange={e => { setUsername(e.target.value); setError(""); }}
-            autoCapitalize="none" autoComplete="off" autoCorrect="off" />
+          <div className="login-id-row">
+            <input className="input login-code" placeholder="CODE" value={code}
+              onChange={e => { setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)); setError(""); }}
+              autoCapitalize="characters" autoComplete="off" autoCorrect="off" spellCheck={false}
+              aria-label="Venue code" maxLength={8} />
+            <span className="login-dash" aria-hidden="true">–</span>
+            <input className="input login-user" placeholder="Username" value={username}
+              onChange={e => { setUsername(e.target.value); setError(""); }}
+              autoCapitalize="none" autoComplete="off" autoCorrect="off" />
+          </div>
           <div className="pin-label">Enter Your PIN</div>
           <div className="pin-dots">
             {[0,1,2,3].map(i => (
