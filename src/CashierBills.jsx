@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "./api";
 import { fmtKsh } from "./format";
-import { ReceiptText, User, ShoppingCart, LogOut, RefreshCw, Inbox, CreditCard, CheckCircle2, XCircle, X, Banknote, Smartphone, Receipt, Clock } from "lucide-react";
+import { ReceiptText, User, ShoppingCart, LogOut, RefreshCw, Inbox, CreditCard, CheckCircle2, XCircle, X, Banknote, Smartphone, Receipt, Clock, Printer } from "lucide-react";
 
 export default function CashierBills({ user, onLogout, onSwitchToPOS }) {
   const [submitted,   setSubmitted]   = useState([]);
@@ -45,6 +45,17 @@ export default function CashierBills({ user, onLogout, onSwitchToPOS }) {
       setRejectModal(null); setRejectNote(""); fetchAll();
     } catch { setMessage("Failed to reject"); }
   };
+
+  const printReceipt = (o) => import("./print").then(m => m.printReceipt({
+    items: o.items,
+    total: o.total,
+    amountPaid: o.total,
+    change: 0,
+    cashier: o.confirmed_by || user?.name || "",
+    paymentMethod: o.payment_method || "cash",
+    splits: o.payment_details || [],
+    date: new Date(o.confirmed_at || Date.now()).toLocaleString(),
+  }));
 
   const methodIcon  = (m) => m==="mpesa"?<Smartphone size={13}/>:m==="card"?<CreditCard size={13}/>:m==="billout"?<Receipt size={13}/>:<Banknote size={13}/>;
   const methodLabel = (m) => m==="mpesa"?"Mpesa":m==="card"?"Card":m==="billout"?"Billout":"Cash";
@@ -128,6 +139,9 @@ export default function CashierBills({ user, onLogout, onSwitchToPOS }) {
                 <span className="bill-amount-lg">{fmtKsh(o.total)}</span>
               </div>
               <div className="text-sm text-green" style={{display:"flex",alignItems:"center",gap:"4px"}}><CheckCircle2 size={12}/> Confirmed by {o.confirmed_by} at {fmtTime(o.confirmed_at)}</div>
+              <div className="bill-actions">
+                <button className="btn btn-ghost btn-sm" onClick={() => printReceipt(o)}><Printer size={13}/> Print receipt</button>
+              </div>
             </div>
           ))}
         </div>
