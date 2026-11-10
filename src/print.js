@@ -107,13 +107,17 @@ export function printTest() {
 }
 
 function openPrint(rows, p) {
-  const win = window.open("", "_blank", "width=420,height=650");
-  if (!win) { alert("Please allow pop-ups to print."); return; }
   // Courier New advances 0.6em; centre the fixed-width block inside the roll so
   // no column lands in the print head's non-printable edge.
   const textMm = (p.chars * p.fs * 0.6 / 96) * 25.4;
   const sideMm = Math.max(0, Math.round(((p.mm - textMm) / 2) * 100) / 100);
   const content = rows.join("\n").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const frame = document.createElement("iframe");
+  frame.setAttribute("aria-hidden", "true");
+  frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none;";
+  document.body.appendChild(frame);
+  const win = frame.contentWindow;
+  win.document.open();
   win.document.write(`<!DOCTYPE html>
 <html>
 <head>
@@ -132,8 +136,7 @@ function openPrint(rows, p) {
 <body><div class="mark">${MARK}</div><div class="t">${content}</div></body>
 </html>`);
   win.document.close();
-  const go = () => { try { win.focus(); win.print(); } catch {} };
-  if (win.document.readyState === "complete") setTimeout(go, 250);
-  else win.onload = () => setTimeout(go, 250);
-  win.onafterprint = () => win.close();
+  win.onafterprint = () => setTimeout(() => frame.remove(), 1500);
+  setTimeout(() => { try { win.focus(); win.print(); } catch {} }, 350);
+  setTimeout(() => { if (frame.isConnected) frame.remove(); }, 90000);
 }

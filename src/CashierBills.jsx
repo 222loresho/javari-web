@@ -34,8 +34,12 @@ export default function CashierBills({ user, onLogout, onSwitchToPOS }) {
   }, [message]);
 
   const confirm = async (o) => {
-    try { await api.post(`/orders/${o.id}/confirm`); setMessage(`${o.table_name} confirmed!`); fetchAll(); }
-    catch { setMessage("Failed to confirm"); }
+    try {
+      await api.post(`/orders/${o.id}/confirm`);
+      setMessage(`${o.table_name} confirmed!`);
+      printReceipt({ ...o, confirmed_by: user?.name || "", confirmed_at: new Date().toISOString() });
+      fetchAll();
+    } catch { setMessage("Failed to confirm"); }
   };
 
   const reject = async () => {

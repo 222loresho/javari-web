@@ -342,8 +342,10 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       const paid   = splits.reduce((a, s) => a + (parseFloat(s.amount) || 0), 0);
       const method = splits.length === 1 ? splits[0].method : "split";
       const res    = await api.post("/sales/", { items: cart, amount_paid: paid, payment_method: method, splits });
-      setReceipt({ items: cart, total, amountPaid: paid, change: res.data.change_due, cashier: user.name, paymentMethod: method, splits, date: new Date().toLocaleString() });
+      const r      = { items: cart, total, amountPaid: paid, change: res.data.change_due, cashier: user.name, paymentMethod: method, splits, date: new Date().toLocaleString() };
+      setReceipt(r);
       setCart([]); setCartOpen(false); resetPayment(); fetchProducts();
+      import("./print").then(m => m.printReceipt(r));
     } catch { setMessage("Sale failed!"); }
   };
 
