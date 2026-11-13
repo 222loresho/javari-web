@@ -103,6 +103,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const [noteModal,       setNoteModal]       = useState(null);
   const [noteText,        setNoteText]        = useState("");
   const receiptRef = useRef();
+  const canTakePayment = ["admin", "manager", "cashier"].includes(user.role);
 
   useEffect(() => {
     sessionStorage.setItem("vendaura_cart", JSON.stringify(cart));
@@ -704,10 +705,12 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                 </div>
               ) : (
                 <>
-                  <SplitFields splits={splits} setSplits={setSplits} orderTotal={total} />
+                  {canTakePayment && <SplitFields splits={splits} setSplits={setSplits} orderTotal={total} />}
                   <div className="cart-actions-row">
                     <button className="btn btn-secondary" onClick={saveTable}><Save size={14}/> Save Table</button>
-                    <button className="btn btn-primary" onClick={handleCheckout}><BadgeCheck size={14}/> Complete Sale</button>
+                    {canTakePayment && (
+                      <button className="btn btn-primary" onClick={handleCheckout}><BadgeCheck size={14}/> Complete Sale</button>
+                    )}
                   </div>
                 </>
               )}
