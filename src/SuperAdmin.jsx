@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import api from "./api";
-import { Store, CheckCircle2, RefreshCw, Pause, Banknote, TrendingUp, CalendarDays, CalendarClock, ReceiptText, BarChart3, Crown, Settings, Users, UserRound, UserCog, UserPlus, Pencil, CreditCard, Play, ChevronUp, ChevronDown, Trash2, X, Plus, StickyNote } from "lucide-react";
+import { Store, CheckCircle2, RefreshCw, Pause, Banknote, TrendingUp, CalendarDays, CalendarClock, ReceiptText, BarChart3, Crown, Settings, Users, UserRound, UserCog, UserPlus, Pencil, CreditCard, Play, ChevronUp, ChevronDown, Trash2, X, Plus, StickyNote, Webhook, Copy, Signature } from "lucide-react";
 
 /* ── Constants ──────────────────────────────────────────────────────────── */
 const PLANS    = ["trial","basic","pro","enterprise"];
@@ -141,6 +141,10 @@ export default function SuperAdmin({ user, onLogout }) {
   const [filterPlan,  setFilterPlan]  = useState("all");
   const [expanded,    setExpanded]    = useState(null);
   const [sortBy,      setSortBy]      = useState("created");
+  const [whConfig,    setWhConfig]    = useState(null);
+  const [whEvents,    setWhEvents]    = useState([]);
+  const [whLoading,   setWhLoading]   = useState(false);
+  const [whOpen,      setWhOpen]      = useState(null);
 
   function blankMarket() {
     return { name:"",location:"",contact_name:"",contact_email:"",
@@ -159,6 +163,30 @@ export default function SuperAdmin({ user, onLogout }) {
     api.get("/superadmin/users").then(r => setUsers(r.data)).catch(()=>{});
   };
   useEffect(() => { fetchAll(); }, []);
+
+  /* ── Webhook actions ────────────────────────────────────────────────── */
+  const loadWebhooks = () => {
+    setWhLoading(true);
+    Promise.all([
+      api.get("/webhooks/config").then(r => r.data).catch(() => null),
+      api.get("/webhooks/events").then(r => r.data).catch(() => []),
+    ]).then(([cfg, events]) => {
+      setWhConfig(cfg);
+      setWhEvents(Array.isArray(events) ? events : []);
+      setWhLoading(false);
+    });
+  };
+  useEffect(() => { if (tab === "webhooks") loadWebhooks(); }, [tab]);
+
+  const copyWebhookUrl = async () => {
+    if (!whConfig?.url) return toast("Set WEBHOOK_SECRET on the server first", "error");
+    try {
+      await navigator.clipboard.writeText(whConfig.url);
+      toast("Webhook URL copied — paste it as the GitHub App webhook URL");
+    } catch {
+      toast("Could not copy — check browser clipboard permissions", "error");
+    }
+  };
 
   /* ── Market actions ─────────────────────────────────────────────────── */
   const saveMarket = async () => {
@@ -235,6 +263,9 @@ export default function SuperAdmin({ user, onLogout }) {
   const totalSubRev  = markets.filter(m=>m.status==="active").reduce((a,m)=>a+(parseFloat(m.monthly_fee)||0),0);
   const fmtDate      = (iso) => !iso?"—":new Date(iso).toLocaleDateString("en-KE",{day:"numeric",month:"short",year:"numeric"});
   const fmtMoney     = (n, cur="KES") => `${cur} ${Number(n||0).toLocaleString()}`;
+  const whUrl        = whConfig?.url || "";
+  const whToken      = whUrl.split("/").pop() || "";
+  const whMasked     = whUrl ? whUrl.replace(whToken, "••••••••" + whToken.slice(-4)) : "";
 
   const ROLE_META = {
     super_admin:{ color:"#c9a84c", label:"Super Admin", icon:<Crown size={18}/> },
@@ -250,6 +281,7 @@ export default function SuperAdmin({ user, onLogout }) {
     { id:"markets",   icon:<Store size={16}/>,      label:"Markets",   badge: markets.length },
     { id:"analytics", icon:<TrendingUp size={16}/>, label:"Analytics" },
     { id:"users",     icon:<Users size={16}/>,      label:"Users",     badge: users.length },
+    { id:"webhooks",  icon:<Webhook size={16}/>,    label:"Webhooks",  badge: whEvents.length || undefined },
   ];
 
   /* ── Render ─────────────────────────────────────────────────────────── */
@@ -695,6 +727,112 @@ export default function SuperAdmin({ user, onLogout }) {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* ── WEBHOOKS ── */}
+          {tab==="webhooks" && (
+            <div style={{padding:"24px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:"12px",flexWrap:"wrap",marginBottom:"20px"}}>
+                <div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"28px",color:"#c9a84c"}}>Webhooks</div>
+                  <div style={{fontSize:"13px",color:"#5c5870"}}>Inbound GitHub deliveries, signed and logged</div>
+                </div>
+                <button className="sa-btn" onClick={loadWebhooks}
+                  style={{background:"rgba(201,168,76,0.15)",color:"#c9a84c",border:"1px solid rgba(201,168,76,0.3)"}}>
+                  <RefreshCw size={12}/> Refresh
+                </button>
+              </div>
+
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"12px",marginBottom:"16px"}}>
+                <div style={{background:"#0d1117",border:"1px solid rgba(201,168,76,0.12)",borderRadius:"14px",padding:"18px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}}>
+                    <Webhook size={15} color="#c9a84c"/>
+                    <span style={{fontSize:"13px",fontWeight:"600"}}>Receiver</span>
+                    <span style={{marginLeft:"auto",fontSize:"10px",fontWeight:"700",padding:"2px 8px",borderRadius:"99px",textTransform:"uppercase",
+                      background: whConfig?.configured?"rgba(74,222,128,0.12)":"rgba(248,113,113,0.12)",
+                      color: whConfig?.configured?"#4ade80":"#f87171"}}>
+                      {whConfig?.configured?"Active":"Not configured"}
+                    </span>
+                  </div>
+                  <div style={{fontSize:"12px",color:"#5c5870",lineHeight:1.6}}>
+                    {whConfig?.configured
+                      ? "Every GitHub delivery is verified against X-Hub-Signature-256 before it is stored."
+                      : "Set WEBHOOK_SECRET on the server, then reload this page."}
+                  </div>
+                </div>
+
+                <div style={{background:"#0d1117",border:"1px solid rgba(201,168,76,0.12)",borderRadius:"14px",padding:"18px"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"10px"}}>
+                    <Signature size={15} color="#4ade80"/>
+                    <span style={{fontSize:"13px",fontWeight:"600"}}>GitHub App URL</span>
+                  </div>
+                  {whConfig?.configured ? (
+                    <>
+                      <div style={{fontFamily:"monospace",fontSize:"11px",color:"#94a3b8",wordBreak:"break-all",background:"#050709",border:"1px solid rgba(255,255,255,0.06)",borderRadius:"8px",padding:"10px",marginBottom:"10px"}}>
+                        {whMasked}
+                      </div>
+                      <button className="sa-btn" onClick={copyWebhookUrl}
+                        style={{background:"rgba(74,222,128,0.12)",color:"#4ade80",border:"1px solid rgba(74,222,128,0.25)"}}>
+                        <Copy size={12}/> Copy full URL
+                      </button>
+                      <div style={{fontSize:"11px",color:"#5c5870",marginTop:"10px",lineHeight:1.6}}>
+                        Use the same value as WEBHOOK_SECRET for the app&apos;s Secret field.
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{fontSize:"12px",color:"#5c5870"}}>The URL appears once the secret is set.</div>
+                  )}
+                </div>
+              </div>
+
+              <div style={{background:"#0d1117",border:"1px solid rgba(201,168,76,0.12)",borderRadius:"14px",padding:"18px",marginBottom:"16px"}}>
+                <div style={{fontSize:"13px",fontWeight:"600",marginBottom:"12px"}}>Set up in three steps</div>
+                {[
+                  "GitHub → Settings → Developer settings → GitHub Apps → New GitHub App.",
+                  "Paste the copied URL as the Webhook URL, set Secret to the same value, tick Push, leave permissions at No access.",
+                  "Install the app on the javari-web repository — GitHub sends a ping you can see below.",
+                ].map((step, i) => (
+                  <div key={i} style={{display:"flex",gap:"10px",fontSize:"12px",color:"#94a3b8",marginBottom:"8px",lineHeight:1.55}}>
+                    <span style={{flexShrink:0,width:"18px",height:"18px",borderRadius:"50%",background:"rgba(201,168,76,0.15)",color:"#c9a84c",fontSize:"10px",fontWeight:"700",display:"flex",alignItems:"center",justifyContent:"center"}}>{i+1}</span>
+                    <span>{step}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{background:"#0d1117",border:"1px solid rgba(201,168,76,0.12)",borderRadius:"14px",padding:"18px"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"12px"}}>
+                  <div style={{fontSize:"13px",fontWeight:"600"}}>Recent deliveries</div>
+                  <div style={{fontSize:"11px",color:"#5c5870"}}>{whEvents.length} stored</div>
+                </div>
+                {whEvents.length===0 ? (
+                  <div style={{fontSize:"12px",color:"#5c5870",padding:"18px 0",textAlign:"center"}}>
+                    {whLoading ? "Loading…" : "Nothing yet — GitHub sends a ping as soon as you save the app."}
+                  </div>
+                ) : (
+                  <div style={{display:"grid",gap:"8px"}}>
+                    {whEvents.map(e => (
+                      <div key={e.id} style={{background:"#0a0e0b",border:"1px solid rgba(201,168,76,0.08)",borderRadius:"10px",overflow:"hidden"}}>
+                        <button onClick={()=>setWhOpen(whOpen===e.id?null:e.id)}
+                          style={{width:"100%",display:"flex",alignItems:"center",gap:"10px",padding:"12px 14px",background:"transparent",border:"none",cursor:"pointer",color:"#e2e8f0",fontFamily:"Outfit,sans-serif",textAlign:"left"}}>
+                          <span style={{fontSize:"10px",fontWeight:"700",padding:"2px 8px",borderRadius:"99px",background:"rgba(201,168,76,0.12)",color:"#c9a84c",textTransform:"uppercase"}}>{e.source}</span>
+                          <span style={{fontSize:"13px",fontWeight:"600"}}>{e.event_type||"unknown event"}</span>
+                          {e.delivery && <span style={{fontSize:"10px",color:"#5c5870",fontFamily:"monospace"}}>{e.delivery.slice(0,8)}</span>}
+                          <span style={{marginLeft:"auto",fontSize:"11px",color:"#5c5870",whiteSpace:"nowrap"}}>
+                            {new Date(e.received_at).toLocaleString("en-KE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
+                          </span>
+                          {whOpen===e.id ? <ChevronUp size={13}/> : <ChevronDown size={13}/>}
+                        </button>
+                        {whOpen===e.id && (
+                          <pre style={{margin:0,padding:"0 14px 14px",fontSize:"11px",lineHeight:1.5,color:"#94a3b8",maxHeight:"240px",overflow:"auto",whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
+                            {JSON.stringify(e.payload, null, 2)}
+                          </pre>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
