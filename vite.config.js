@@ -16,8 +16,6 @@ export default defineConfig({
         theme_color: "#08090d",
         background_color: "#08090d",
         display: "standalone",
-        start_url: "/javari-web/",
-        scope: "/javari-web/",
         icons: [
           { src: "app-icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
           { src: "app-icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
@@ -41,5 +39,5 @@ export default defineConfig({
       },
     }),
   ],
-  base: "/javari-web/",
+  base: process.env.VITE_BASE || "/",
 });

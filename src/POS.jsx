@@ -2,10 +2,17 @@ import { useState, useEffect, useRef } from "react";
 import api from "./api";
 import { fmtKsh } from "./format";
 import { productImage, monogram } from "./menuImages";
-import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search, LayoutDashboard, MousePointerClick } from "lucide-react";
+import { ShoppingCart, Armchair, ReceiptText, LogOut, Users, User, Clock, Printer, CreditCard, Save, RefreshCw, BadgeCheck, ClipboardList, StickyNote, X, Pencil, Inbox, CheckCircle2, Lock, AlertTriangle, XCircle, Search, LayoutDashboard, MousePointerClick, ScanLine, Trash2 } from "lucide-react";
 
 
 /* ── SplitFields — standalone to prevent re-render keypad loss ─────────── */
+function tenderOptions(total) {
+  if (!(total > 0)) return [];
+  const roundUp = (step) => Math.ceil(total / step) * step;
+  const values = [total, roundUp(50), roundUp(100), roundUp(500), roundUp(1000)];
+  return [...new Set(values.map(v => Math.round(v)))].slice(0, 5);
+}
+
 function SplitFields({ splits, setSplits, orderTotal }) {
   const paid   = splits.reduce((a,s) => a+(parseFloat(s.amount)||0), 0);
   const change = paid - orderTotal;
@@ -22,10 +29,10 @@ function SplitFields({ splits, setSplits, orderTotal }) {
           <div className="split-top">
             <select className="input" style={{margin:0,flex:1}} value={split.method}
               onChange={e => setSplits(splits.map((s,i) => i===idx?{...s,method:e.target.value,ref:""}:s))}>
-              <option value="cash">💵 Cash</option>
-              <option value="mpesa">📱 Mpesa</option>
-              <option value="card">💳 Card</option>
-              <option value="billout">📋 Billout</option>
+              <option value="cash">Cash</option>
+              <option value="mpesa">M-Pesa</option>
+              <option value="card">Card</option>
+              <option value="billout">Billout</option>
             </select>
             <input className="input" type="number" placeholder="Amount" style={{margin:0,flex:1}}
               value={split.amount}
@@ -54,6 +61,17 @@ function SplitFields({ splits, setSplits, orderTotal }) {
           )}
         </div>
       ))}
+      {splits.length === 1 && splits[0].method === "cash" && orderTotal > 0 && (
+        <div className="tender-chips">
+          {tenderOptions(orderTotal).map((value, i) => (
+            <button key={value} type="button"
+              className={`tender-chip ${parseFloat(splits[0].amount) === value ? "tender-chip-active" : ""}`}
+              onClick={() => setSplits([{ ...splits[0], method: "cash", amount: String(value) }])}>
+              {i === 0 ? "Exact" : `KSh ${value.toLocaleString("en-KE")}`}
+            </button>
+          ))}
+        </div>
+      )}
       <div className="split-total">
         Paid: <strong style={{color:paid>=orderTotal?"var(--green)":"var(--red)"}}>{fmtKsh(paid)}</strong> / {fmtKsh(orderTotal)}
         {change > 0 && <span style={{marginLeft:"10px",color:"var(--green)",fontWeight:"700"}}>Change: {fmtKsh(change.toFixed(0))}</span>}
@@ -102,7 +120,10 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const [selectedWaiter,  setSelectedWaiter]  = useState("all");
   const [noteModal,       setNoteModal]       = useState(null);
   const [noteText,        setNoteText]        = useState("");
+  const [scanValue,       setScanValue]       = useState("");
   const receiptRef = useRef();
+  const scanRef    = useRef(null);
+  const searchRef  = useRef(null);
   const canTakePayment = ["admin", "manager", "cashier"].includes(user.role);
 
   useEffect(() => {
@@ -173,18 +194,72 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
     return () => clearInterval(t);
   }, [view]);
 
+  useEffect(() => {
+    const modalOpen = showPinModal || showSubmittedPin || showPayModal || !!receipt || !!noteModal;
+    if (!modalOpen) return;
+    if (document.activeElement === scanRef.current) scanRef.current?.blur();
+    if (document.activeElement === searchRef.current) searchRef.current?.blur();
+  }, [showPinModal, showSubmittedPin, showPayModal, receipt, noteModal]);
+
+  useEffect(() => {
+    if (view !== "sales") return;
+    if (showPinModal || showSubmittedPin || showPayModal || receipt || noteModal) return;
+    if (!window.matchMedia("(min-width: 901px) and (pointer: fine)").matches) return;
+    scanRef.current?.focus();
+  }, [view, showPinModal, showSubmittedPin, showPayModal, receipt, noteModal]);
+
+  useEffect(() => {
+    if (view !== "sales") return;
+    const onKey = (e) => {
+      if (showPinModal || showSubmittedPin || showPayModal || receipt || noteModal) return;
+      if (e.key === "F2") {
+        e.preventDefault();
+        scanRef.current?.focus();
+        scanRef.current?.select();
+      } else if (e.key === "F3") {
+        e.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [view, showPinModal, showSubmittedPin, showPayModal, receipt, noteModal]);
+
   const filteredProducts = products.filter(p => {
-    const ms = p.name.toLowerCase().includes(search.toLowerCase());
+    const q  = search.trim().toLowerCase();
+    const ms = !q || p.name.toLowerCase().includes(q) || (p.barcode || "").toLowerCase().includes(q);
     const mc = !selectedCat || p.category_id === parseInt(selectedCat);
     return ms && mc;
   });
+
+  const catCounts = products.reduce((m, p) => {
+    if (p.category_id != null) m[p.category_id] = (m[p.category_id] || 0) + 1;
+    return m;
+  }, {});
+
+  const submitScan = (e) => {
+    if (e) e.preventDefault();
+    const code = scanValue.trim();
+    if (!code) return;
+    setScanValue("");
+    const product = products.find(p => (p.barcode || "").toLowerCase() === code.toLowerCase());
+    if (!product) {
+      setMessage(`No product uses barcode ${code}`);
+      scanRef.current?.focus();
+      return;
+    }
+    addToCart(product);
+    setMessage(`${product.name} added`);
+    scanRef.current?.focus();
+  };
 
   const addToCart = (product) => {
     setCart(prev => {
       const ex = prev.find(i => i.product_id === product.id);
       if (ex) return prev.map(i => i.product_id === product.id
         ? { ...i, quantity: i.quantity + 1, subtotal: (i.quantity + 1) * i.price } : i);
-      return [...prev, { product_id: product.id, product_name: product.name, price: product.price, quantity: 1, subtotal: product.price }];
+      return [...prev, { product_id: product.id, product_name: product.name, price: product.price, quantity: 1, subtotal: product.price, unit: product.unit || "pc" }];
     });
     setClicks(prev => {
       const next = { ...prev, [product.id]: (prev[product.id] || 0) + 1 };
@@ -213,6 +288,12 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
   const tablesValue  = pendingOrders.reduce((s, o) => s + (o.total || 0), 0);
   const oldestMin    = pendingOrders.reduce((m, o) => Math.max(m, tableAgeMin(o.created_at)), 0);
   const resetPayment = () => setSplits([{ method: "cash", amount: "", ref: "" }]);
+
+  const clearCart = () => {
+    if (!window.confirm("Clear the cart?")) return;
+    setCart([]);
+    resetPayment();
+  };
 
   const getNextTableNumber = () => {
     if (!pendingOrders.length) return 1;
@@ -444,7 +525,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
       </div>
 
       {message && (
-        <div className={`toast ${message.includes("saved")||message.includes("updated")||message.includes("submitted")||message.includes("Editing") ? "toast-success" : "toast-error"}`}>
+        <div className={`toast ${message.includes("saved")||message.includes("updated")||message.includes("submitted")||message.includes("Editing")||message.includes("added") ? "toast-success" : "toast-error"}`}>
           {message}
         </div>
       )}
@@ -544,6 +625,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                       <div className="cart-qty-row">
                         <button className="qty-btn" onClick={() => updateQty(item.product_id,-1)}>−</button>
                         <span className="qty-val">{item.quantity}</span>
+                        {item.unit && item.unit !== "pc" && <span className="qty-unit">{item.unit}</span>}
                         <button className="qty-btn" onClick={() => updateQty(item.product_id,+1)}>+</button>
                         <button className="btn-icon text-sm" style={{marginLeft:"auto"}} onClick={() => removeFromCart(item.product_id)}>remove</button>
                       </div>
@@ -604,12 +686,47 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         <>
         <div className="pos-layout">
           <div className="products-panel">
-            <div className="search-bar">
-              <input className="input" placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:0}} />
-              <select className="input" style={{marginBottom:0,width:"auto",minWidth:"110px"}} value={selectedCat} onChange={e => setSelectedCat(e.target.value)}>
-                <option value="">All Categories</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+            <div className="pos-tools">
+              <div className="scan-bar">
+                <ScanLine size={16} className="scan-icon"/>
+                <input ref={scanRef} className="scan-input"
+                  value={scanValue}
+                  onChange={e => setScanValue(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") submitScan(e); }}
+                  placeholder="Scan barcode or type a code, then press Enter"
+                  inputMode="numeric" autoComplete="off" spellCheck="false"
+                  aria-label="Barcode input" />
+                <span className="kbd-hint">F2</span>
+              </div>
+              <div className="search-field">
+                <Search size={15}/>
+                <input ref={searchRef} className="search-input"
+                  placeholder="Search products or barcodes"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === "Enter" && filteredProducts.length) {
+                      e.preventDefault();
+                      addToCart(filteredProducts[0]);
+                      setMessage(`${filteredProducts[0].name} added`);
+                    }
+                  }} />
+                {search && (
+                  <button className="search-clear" onClick={() => setSearch("")} aria-label="Clear search"><X size={13}/></button>
+                )}
+                <span className="kbd-hint">F3</span>
+              </div>
+              <div className="cat-chips">
+                <button className={`bubble ${!selectedCat ? "bubble-active" : ""}`} onClick={() => setSelectedCat("")}>
+                  All <span className="bubble-count">{products.length}</span>
+                </button>
+                {categories.filter(c => catCounts[c.id]).map(c => (
+                  <button key={c.id} className={`bubble ${selectedCat === String(c.id) ? "bubble-active" : ""}`}
+                    onClick={() => setSelectedCat(selectedCat === String(c.id) ? "" : String(c.id))}>
+                    {c.name} <span className="bubble-count">{catCounts[c.id]}</span>
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="product-grid">
               {filteredProducts.length === 0 && (
@@ -622,7 +739,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                 const img = productImage(p);
                 const showPh = !img || imgErrors[p.id];
                 return (
-                <div key={p.id} className="product-card" onClick={() => addToCart(p)}>
+                <div key={p.id} className="product-card" onClick={() => addToCart(p)} title={p.barcode ? `Barcode ${p.barcode}` : undefined}>
                   <div className="product-media">
                     {showPh && <span className="product-ph">{monogram(p.name)}</span>}
                     {img && !imgErrors[p.id] && <img src={img} alt="" loading="lazy" onError={() => setImgErrors(prev => ({ ...prev, [p.id]: true }))} />}
@@ -635,7 +752,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                   </div>
                   <div className="product-body">
                     <div className="product-name">{p.name}</div>
-                    <div className="product-price">{fmtKsh(p.price)}</div>
+                    <div className="product-price">{fmtKsh(p.price)}{p.unit && p.unit !== "pc" && <span className="unit-tag"> / {p.unit}</span>}</div>
                     <div className="product-stock"><span className={`stock-dot ${p.stock===0?"stock-out":p.stock<=5?"stock-low":"stock-ok"}`}/> {p.stock===0?"Out of stock":`${p.stock} in stock`}</div>
                   </div>
                 </div>
@@ -654,6 +771,9 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
             <div className="cart-body">
               <div className="section-title" style={{padding:"14px 14px 0"}}>
                 Cart
+                {cart.length > 0 && !activeOrder && (
+                  <button className="btn-clear-cart" onClick={clearCart} title="Clear cart"><Trash2 size={12}/> Clear</button>
+                )}
                 <button className="btn-icon cart-mobile-close" onClick={() => setCartOpen(false)} aria-label="Close cart"><X size={18}/></button>
               </div>
               {cart.length === 0 && (
@@ -677,6 +797,7 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
                       style={{opacity: activeOrder && user.role !== "admin" && item.quantity <= 1 ? 0.3 : 1}}
                     >−</button>
                     <span className="qty-val">{item.quantity}</span>
+                    {item.unit && item.unit !== "pc" && <span className="qty-unit">{item.unit}</span>}
                     <button className="qty-btn" onClick={() => updateQty(item.product_id,+1)}>+</button>
                     <button className="btn-icon text-sm" style={{marginLeft:"auto",color:item.note?"var(--green)":"var(--muted)"}}
                       onClick={() => { setNoteModal(item.product_id); setNoteText(item.note||""); }}

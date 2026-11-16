@@ -165,6 +165,8 @@ body {
 .input::placeholder{color:var(--muted);}
 .input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);background:rgba(47,191,113,0.05);}
 .input option{background:var(--card);color:var(--text);}
+.input-row{display:flex;gap:8px;align-items:stretch;}
+.input-row .input{flex:1;min-width:0;}
 
 .card{background:linear-gradient(180deg,var(--card),rgba(21,24,35,0.6));border:1px solid var(--border);border-radius:var(--r-md);padding:16px;margin-bottom:12px;transition:all 0.25s;}
 .card:hover{border-color:var(--border-mid);transform:translateY(-1px);box-shadow:var(--shadow-sm);}
@@ -188,6 +190,23 @@ body {
 
 .products-panel{display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;min-height:0;}
 .search-bar{display:flex;gap:10px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;flex-shrink:0;}
+.pos-tools{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px 8px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
+.scan-bar{display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,rgba(127,214,164,0.11),rgba(127,214,164,0.03));border:1px solid rgba(127,214,164,0.3);border-radius:11px;padding:0 11px;height:42px;transition:border-color 0.18s,box-shadow 0.18s;}
+.scan-bar:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);}
+.scan-icon{color:var(--accent);flex-shrink:0;}
+.scan-input{flex:1;min-width:0;background:transparent;border:0;outline:none;color:var(--text);font-family:'Outfit',sans-serif;font-size:13.5px;font-weight:500;letter-spacing:0.2px;}
+.scan-input::placeholder{color:var(--muted);font-weight:400;}
+.kbd-hint{font-size:9.5px;font-weight:700;letter-spacing:0.5px;color:var(--muted);border:1px solid var(--border-mid);border-radius:5px;padding:3px 5px;line-height:1;flex-shrink:0;background:var(--card);}
+.search-field{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:0 11px;height:38px;transition:border-color 0.18s;}
+.search-field:focus-within{border-color:var(--border-hi);}
+.search-field>svg{color:var(--muted);flex-shrink:0;}
+.search-input{flex:1;min-width:0;background:transparent;border:0;outline:none;color:var(--text);font-family:'Outfit',sans-serif;font-size:13.5px;}
+.search-input::placeholder{color:var(--muted);}
+.search-clear{display:inline-flex;border:0;background:transparent;color:var(--muted);cursor:pointer;padding:2px;border-radius:4px;}
+.search-clear:hover{color:var(--text);}
+.cat-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;}
+.cat-chips::-webkit-scrollbar{display:none;}
+.cat-chips .bubble{flex-shrink:0;padding:5px 11px;font-size:11.5px;}
 
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;padding:14px;background:transparent;flex:0 0 auto;align-content:start;}
 .product-card{background:linear-gradient(180deg,var(--card),rgba(21,24,35,0.55));border:1px solid var(--border);border-radius:var(--r-md);padding:0;cursor:pointer;text-align:left;transition:all 0.22s;position:relative;overflow:hidden;user-select:none;display:flex;flex-direction:column;}
@@ -205,6 +224,7 @@ body {
 .product-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:2px;}
 .product-name{font-weight:600;font-size:12.5px;color:var(--text);line-height:1.3;}
 .product-price{color:var(--accent-hi);font-weight:700;font-size:14.5px;font-variant-numeric:tabular-nums;}
+.unit-tag{font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:0;}
 .product-stock{color:var(--muted);font-size:10.5px;display:flex;align-items:center;gap:5px;}
 .stock-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
 .stock-ok{background:var(--green);box-shadow:0 0 6px rgba(127,214,164,0.5);}
@@ -224,6 +244,9 @@ body {
 .qty-btn{width:32px;height:32px;background:var(--card);border:1px solid var(--border-mid);border-radius:9px;cursor:pointer;color:var(--accent);font-size:18px;font-weight:bold;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
 .qty-btn:hover{background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
 .qty-val{font-size:15px;font-weight:600;min-width:24px;text-align:center;font-variant-numeric:tabular-nums;}
+.qty-unit{font-size:11px;font-weight:600;color:var(--muted);margin-left:-4px;}
+.btn-clear-cart{display:inline-flex;align-items:center;gap:4px;margin-left:auto;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Outfit',sans-serif;font-size:11px;font-weight:600;padding:4px 8px;border-radius:7px;cursor:pointer;transition:all 0.15s;}
+.btn-clear-cart:hover{border-color:rgba(224,90,77,0.4);color:var(--red);}
 .cart-footer{padding:12px 14px 13px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
 .total-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;font-weight:600;font-size:15px;}
 .total-amount{font-family:'Cormorant Garamond',serif;color:var(--accent-hi);font-weight:700;font-size:25px;letter-spacing:0.5px;font-variant-numeric:tabular-nums;}
@@ -236,6 +259,10 @@ body {
 .split-row .input,.split-row select.input{padding:7px 9px;font-size:12.5px;}
 .split-total{font-size:11.5px;color:var(--muted);margin-top:5px;font-variant-numeric:tabular-nums;}
 .split-total strong{color:var(--green);}
+.tender-chips{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 8px;}
+.tender-chip{padding:6px 11px;border-radius:8px;border:1px solid var(--border-mid);background:var(--card);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;transition:all 0.15s;font-variant-numeric:tabular-nums;}
+.tender-chip:hover{border-color:var(--accent);color:var(--accent-hi);}
+.tender-chip-active{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
 .cart-actions-row{display:flex;gap:8px;}
 .cart-actions-row .btn{flex:1;justify-content:center;padding:11px 8px;font-size:12.5px;min-width:0;}
 

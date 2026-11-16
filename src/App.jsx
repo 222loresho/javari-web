@@ -15,7 +15,10 @@ export default function App() {
   });
   const [view, setView] = useState("default");
 
-  const handleLogin  = (u) => { setUser(u); setView("default"); };
+  const handleLogin  = (u) => {
+    setUser(u);
+    setView(u.role === "super_admin" ? "default" : "pos");
+  };
   const TIMEOUT_MINUTES = 30;
   useSessionTimeout(() => {
     if (user) {

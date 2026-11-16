@@ -12,6 +12,9 @@ const DailyReport    = lazy(() => import("./DailyReport"));
 const LowStock       = lazy(() => import("./LowStock"));
 const RevenueChart   = lazy(() => import("./RevenueChart"));
 
+const UNITS = ["pc", "kg", "g", "l", "ml", "pack", "dozen", "bunch"];
+const EMPTY_PRODUCT = { name:"", price:"", stock:"", category_id:"", image_url:"", barcode:"", unit:"pc" };
+
 export default function Admin({ user, onLogout, onSwitchToPOS }) {
   const [tab,         setTab]         = useState("products");
   const [products,    setProducts]    = useState([]);
@@ -20,7 +23,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
   const [message,     setMessage]     = useState("");
   const [editProduct, setEditProduct] = useState(null);
   const [lowCount,    setLowCount]    = useState(0);
-  const [newProduct,  setNewProduct]  = useState({ name:"", price:"", stock:"", category_id:"", image_url:"" });
+  const [newProduct,  setNewProduct]  = useState(EMPTY_PRODUCT);
   const [newCat,      setNewCat]      = useState("");
   const [imgErrors,   setImgErrors]   = useState({});
   const [paper,       setPaperSize]   = useState(() => getPaper());
@@ -40,7 +43,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
     if (!newProduct.name || !newProduct.price) return setMessage("Name and price required");
     try {
       await api.post("/products/", { ...newProduct, category_id: newProduct.category_id || null });
-      setNewProduct({ name:"",price:"",stock:"",category_id:"",image_url:"" }); fetchProducts(); setMessage("Product added!");
+      setNewProduct(EMPTY_PRODUCT); fetchProducts(); setMessage("Product added!");
     } catch(e) { setMessage(e.response?.data?.error || "Failed"); }
   };
 
@@ -99,7 +102,13 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
             <div className="section-title" style={{padding:0,marginBottom:"12px"}}>Add Product</div>
             <input className="input" placeholder="Product name"    value={newProduct.name}        onChange={e => setNewProduct({...newProduct,name:e.target.value})} />
             <input className="input" placeholder="Price (KSh)"    type="number" value={newProduct.price}  onChange={e => setNewProduct({...newProduct,price:e.target.value})} />
-            <input className="input" placeholder="Stock quantity"  type="number" value={newProduct.stock}  onChange={e => setNewProduct({...newProduct,stock:e.target.value})} />
+            <div className="input-row">
+              <input className="input" placeholder="Stock quantity"  type="number" value={newProduct.stock}  onChange={e => setNewProduct({...newProduct,stock:e.target.value})} />
+              <select className="input" style={{maxWidth:"110px"}} value={newProduct.unit} onChange={e => setNewProduct({...newProduct,unit:e.target.value})}>
+                {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+              </select>
+            </div>
+            <input className="input" placeholder="Barcode (scan or type)" value={newProduct.barcode} onChange={e => setNewProduct({...newProduct,barcode:e.target.value})} />
             <select className="input" value={newProduct.category_id} onChange={e => setNewProduct({...newProduct,category_id:e.target.value})}>
               <option value="">No Category</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -112,7 +121,13 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
               <div className="section-title" style={{padding:0,marginBottom:"12px",display:"flex",alignItems:"center",gap:"6px"}}><Pencil size={15}/> Edit Product</div>
               <input className="input" value={editProduct.name}  onChange={e => setEditProduct({...editProduct,name:e.target.value})} />
               <input className="input" type="number" value={editProduct.price} onChange={e => setEditProduct({...editProduct,price:e.target.value})} />
-              <input className="input" type="number" value={editProduct.stock} onChange={e => setEditProduct({...editProduct,stock:e.target.value})} />
+              <div className="input-row">
+                <input className="input" type="number" value={editProduct.stock} onChange={e => setEditProduct({...editProduct,stock:e.target.value})} />
+                <select className="input" style={{maxWidth:"110px"}} value={editProduct.unit||"pc"} onChange={e => setEditProduct({...editProduct,unit:e.target.value})}>
+                  {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+              </div>
+              <input className="input" placeholder="Barcode" value={editProduct.barcode||""} onChange={e => setEditProduct({...editProduct,barcode:e.target.value})} />
               <select className="input" value={editProduct.category_id||""} onChange={e => setEditProduct({...editProduct,category_id:e.target.value})}>
                 <option value="">No Category</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -136,7 +151,7 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
                 </div>
                 <div>
                   <div className="admin-item-name">{p.name}</div>
-                  <div className="admin-item-sub">{fmtKsh(p.price)} | Stock: {p.stock} | {categories.find(c=>c.id===p.category_id)?.name||"No category"}</div>
+                  <div className="admin-item-sub">{fmtKsh(p.price)}{p.unit && p.unit !== "pc" ? ` / ${p.unit}` : ""} | Stock: {p.stock} | {categories.find(c=>c.id===p.category_id)?.name||"No category"}{p.barcode ? ` | ${p.barcode}` : ""}</div>
                 </div>
               </div>
               <div className="admin-item-actions">
