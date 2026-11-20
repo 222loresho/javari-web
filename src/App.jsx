@@ -3,6 +3,7 @@ import Login from "./Login";
 import POS from "./POS";
 import Admin from "./Admin";
 import CashierBills from "./CashierBills";
+import TillSetup from "./TillSetup";
 import useSessionTimeout from "./useSessionTimeout";
 
 const SuperAdmin = lazy(() => import("./SuperAdmin"));
@@ -40,21 +41,26 @@ export default function App() {
   if (user.role === "super_admin")
     return <Suspense fallback={<div className="loading-bar" />}><SuperAdmin user={user} onLogout={handleLogout} /></Suspense>;
 
+  let screen;
   if (user.role === "admin" && view === "pos")
-    return <POS user={user} onLogout={handleLogout} onExit={() => setView("default")} exitLabel="Admin" />;
-  if (user.role === "admin")
-    return <Admin user={user} onLogout={handleLogout} onSwitchToPOS={() => setView("pos")} />;
+    screen = <POS user={user} onLogout={handleLogout} onExit={() => setView("default")} exitLabel="Admin" />;
+  else if (user.role === "admin")
+    screen = <Admin user={user} onLogout={handleLogout} onSwitchToPOS={() => setView("pos")} />;
+  else if (user.role === "manager" && view === "pos")
+    screen = <POS user={user} onLogout={handleLogout} onExit={() => setView("default")} exitLabel="Manager" />;
+  else if (user.role === "manager")
+    screen = <Suspense fallback={<div className="loading-bar" />}><Manager user={user} onLogout={handleLogout} onSwitchToPOS={() => setView("pos")} /></Suspense>;
+  else if (user.role === "cashier" && view === "bills")
+    screen = <CashierBills user={user} onLogout={handleLogout} onSwitchToPOS={() => setView("default")} />;
+  else if (user.role === "cashier")
+    screen = <POS user={user} onLogout={handleLogout} showBills onSwitchToBills={() => setView("bills")} />;
+  else
+    screen = <POS user={user} onLogout={handleLogout} />;
 
-  if (user.role === "manager" && view === "pos")
-    return <POS user={user} onLogout={handleLogout} onExit={() => setView("default")} exitLabel="Manager" />;
-  if (user.role === "manager")
-    return <Suspense fallback={<div className="loading-bar" />}><Manager user={user} onLogout={handleLogout} onSwitchToPOS={() => setView("pos")} /></Suspense>;
-
-  if (user.role === "cashier") {
-    if (view === "bills")
-      return <CashierBills user={user} onLogout={handleLogout} onSwitchToPOS={() => setView("default")} />;
-    return <POS user={user} onLogout={handleLogout} showBills onSwitchToBills={() => setView("bills")} />;
-  }
-
-  return <POS user={user} onLogout={handleLogout} />;
+  return (
+    <>
+      {screen}
+      <TillSetup />
+    </>
+  );
 }

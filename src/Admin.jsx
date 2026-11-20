@@ -200,6 +200,10 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
               <button className={`bubble ${paper==="80"?"bubble-active":""}`} onClick={() => { setPaper("80"); setPaperSize("80"); setMessage("Paper Updated to 80 mm"); }}>80 mm · 42 cols</button>
             </div>
             <button className="btn btn-primary full-btn" onClick={() => printTest()}><Printer size={14}/> Print test receipt</button>
+            <button className="btn btn-ghost full-btn" style={{marginTop:"8px"}}
+              onClick={() => window.dispatchEvent(new Event("vendaura:till-setup"))}>
+              Run the till setup guide
+            </button>
           </div>
           <div className="card">
             <div className="section-title" style={{padding:0,marginBottom:"8px"}}>Printer setup</div>

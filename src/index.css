@@ -377,6 +377,21 @@ body {
 .modal-actions{display:flex;gap:10px;margin-top:16px;}
 .modal-actions .btn{flex:1;justify-content:center;}
 
+.till-steps{display:flex;gap:6px;margin:-4px 0 16px;}
+.till-step-dot{flex:1;height:3px;border-radius:99px;background:var(--border);transition:background 0.25s;}
+.till-step-dot.on{background:linear-gradient(90deg,var(--accent),var(--accent-hi));}
+.till-choice{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.till-choice-btn{display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;padding:12px 14px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--card);color:var(--text-dim);cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.18s;}
+.till-choice-btn strong{font-size:14px;color:var(--text);}
+.till-choice-btn span{font-size:11px;color:var(--muted);}
+.till-choice-btn:hover{border-color:var(--border-hi);}
+.till-choice-btn.on{border-color:var(--accent);background:var(--accent-glow);box-shadow:0 0 0 3px var(--accent-glow);}
+.till-choice-btn.on strong{color:var(--accent-hi);}
+.till-print-icon{width:56px;height:56px;border-radius:16px;margin:2px auto 12px;display:flex;align-items:center;justify-content:center;color:var(--accent-hi);background:var(--accent-glow);border:1px solid var(--border-hi);}
+.till-confirm{border:1px solid var(--border);border-radius:var(--r-md);padding:12px;background:var(--card);}
+.till-confirm.bad{border-color:rgba(248,113,113,0.35);}
+.till-hint{font-size:12px;line-height:1.6;color:var(--text-dim);display:flex;gap:8px;}
+
 .receipt-header{text-align:center;padding-bottom:10px;}
 .receipt-logo{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:#111;letter-spacing:4px;}
 .receipt-sub{font-size:12px;color:#777;margin-top:2px;}

@@ -508,6 +508,8 @@ export default function POS({ user, onLogout, showBills = false, onSwitchToBills
         <h2><span className="brand-lockup"><span className="brand-mark" aria-hidden="true"/> <span className="brand-name">Vendaura</span>{user.market_name && <span className="header-venue">{user.market_name}</span>}</span></h2>
         <div className="header-right">
           <span className="header-user"><User size={12}/> {user.name}</span>
+          <button className="btn btn-ghost btn-sm" aria-label="Printer setup" title="Printer setup"
+            onClick={() => window.dispatchEvent(new Event("vendaura:till-setup"))}><Printer size={13}/></button>
           {onExit && <button className="btn btn-ghost btn-sm" onClick={onExit}><LayoutDashboard size={13}/> {exitLabel}</button>}
           {onSwitchToBills && <button className="btn btn-ghost btn-sm" onClick={onSwitchToBills}><ReceiptText size={13}/> Bills</button>}
           <button className="btn btn-danger btn-sm" onClick={onLogout}><LogOut size={13}/> Logout</button>

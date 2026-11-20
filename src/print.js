@@ -17,6 +17,30 @@ export function setPaper(size) {
   catch {}
 }
 
+export function getTillName() {
+  try { return localStorage.getItem("vendaura_till_name") || ""; }
+  catch { return ""; }
+}
+
+export function setTillName(name) {
+  try {
+    if (name) localStorage.setItem("vendaura_till_name", name);
+    else localStorage.removeItem("vendaura_till_name");
+  } catch {}
+}
+
+export function isPrinterSetUp() {
+  try { return localStorage.getItem("vendaura_printer_ready") === "1"; }
+  catch { return false; }
+}
+
+export function markPrinterSetUp() {
+  try {
+    localStorage.setItem("vendaura_printer_ready", "1");
+    localStorage.setItem("vendaura_printer_ready_at", new Date().toISOString());
+  } catch {}
+}
+
 const line   = (w, c="-") => c.repeat(w);
 const center = (s, w) => " ".repeat(Math.max(0, Math.floor((w - s.length) / 2))) + s;
 const pad    = (l, r, w) => { l = String(l); r = String(r); return l + " ".repeat(Math.max(1, w - l.length - r.length)) + r; };
@@ -27,6 +51,7 @@ export function printBill(order) {
   const rows = [
     center(STORE.name, w),
     center(STORE.address, w),
+    ...(getTillName() ? [center(getTillName(), w)] : []),
     line(w),
     pad("Order:", order.order_number || "", w),
     pad("Table:", order.table_name || "", w),
@@ -50,6 +75,7 @@ export function printOrder(order) {
   const rows = [
     center(STORE.name, w),
     center(STORE.address, w),
+    ...(getTillName() ? [center(getTillName(), w)] : []),
     line(w),
     pad("ORDER:", order.order_number || "", w),
     pad("Table:", order.table_name || "", w),
@@ -84,6 +110,7 @@ export function printReceipt(receipt) {  const p = PAPERS[getPaper()];
   const rows = [
     center(STORE.name, w),
     center(STORE.address, w),
+    ...(getTillName() ? [center(getTillName(), w)] : []),
     line(w),
     pad("Cashier:", receipt.cashier || "", w),
     pad("Date:", (receipt.date || new Date().toLocaleString()).split(",")[0], w),
