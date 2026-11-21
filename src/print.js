@@ -7,38 +7,65 @@ const PAPERS = {
 
 const MARK = `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><g fill="#000" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.9"><path d="M7.7 27.1C9.4 22.3 12.3 16.7 16 2.4" fill="none"/><path d="M24.3 27.1C22.6 22.3 19.7 16.7 16 2.4" fill="none"/><path d="M10.8 22.5C7.7 21.5 4.4 18.8 5.75 17.4C7.3 16.7 9.4 19.6 10.8 22.5Z"/><path d="M12.7 18C9.8 16.7 6.9 14.2 8.1 12.8C9.6 12 11.5 14.9 12.7 18Z"/><path d="M14.5 13.2C11.9 11.8 9.4 9.5 10.6 8.4C11.9 7.6 13.7 10.3 14.5 13.2Z"/><path d="M15.6 8.4C13.5 7.4 11.4 5.6 12.3 4.3C13.3 3.5 14.85 5.9 15.6 8.4Z"/><path d="M21.2 22.5C24.3 21.5 27.6 18.8 26.25 17.4C24.7 16.7 22.6 19.6 21.2 22.5Z"/><path d="M19.3 18C22.2 16.7 25.1 14.2 23.9 12.8C22.4 12 20.5 14.9 19.3 18Z"/><path d="M17.5 13.2C20.1 11.8 22.6 9.5 21.4 8.4C20.1 7.6 18.3 10.3 17.5 13.2Z"/><path d="M16.4 8.4C18.5 7.4 20.6 5.6 19.7 4.3C18.7 3.5 17.15 5.9 16.4 8.4Z"/></g><circle cx="16" cy="1.9" r="0.95" fill="#000"/><circle cx="14.6" cy="3" r="0.6" fill="#000"/><circle cx="17.4" cy="3" r="0.6" fill="#000"/><circle cx="13.3" cy="4.6" r="0.45" fill="#000"/><circle cx="18.7" cy="4.6" r="0.45" fill="#000"/><circle cx="16" cy="29.4" r="0.55" fill="#000"/></svg>`;
 
+let printVenue = "";
+
+export function setPrintVenue(venue) {
+  printVenue = venue == null || venue === "" ? "" : String(venue);
+}
+
+export function getPrintVenue() {
+  return printVenue;
+}
+
+const venueKey = (base) => (printVenue ? `${base}:${printVenue}` : base);
+
 export function getPaper() {
-  try { return localStorage.getItem("vendaura_paper") === "58" ? "58" : "80"; }
+  try { return localStorage.getItem(venueKey("vendaura_paper")) === "58" ? "58" : "80"; }
   catch { return "80"; }
 }
 
 export function setPaper(size) {
-  try { localStorage.setItem("vendaura_paper", size === "58" ? "58" : "80"); }
+  try { localStorage.setItem(venueKey("vendaura_paper"), size === "58" ? "58" : "80"); }
   catch {}
 }
 
 export function getTillName() {
-  try { return localStorage.getItem("vendaura_till_name") || ""; }
+  try { return localStorage.getItem(venueKey("vendaura_till_name")) || ""; }
   catch { return ""; }
 }
 
 export function setTillName(name) {
   try {
-    if (name) localStorage.setItem("vendaura_till_name", name);
-    else localStorage.removeItem("vendaura_till_name");
+    if (name) localStorage.setItem(venueKey("vendaura_till_name"), name);
+    else localStorage.removeItem(venueKey("vendaura_till_name"));
   } catch {}
 }
 
 export function isPrinterSetUp() {
-  try { return localStorage.getItem("vendaura_printer_ready") === "1"; }
+  try { return localStorage.getItem(venueKey("vendaura_printer_ready")) === "1"; }
   catch { return false; }
 }
 
 export function markPrinterSetUp() {
   try {
-    localStorage.setItem("vendaura_printer_ready", "1");
-    localStorage.setItem("vendaura_printer_ready_at", new Date().toISOString());
+    localStorage.setItem(venueKey("vendaura_printer_ready"), "1");
+    localStorage.setItem(venueKey("vendaura_printer_ready_at"), new Date().toISOString());
   } catch {}
+}
+
+export function isPrinterSetupSkipped() {
+  try { return localStorage.getItem(venueKey("vendaura_printer_skipped")) === "1"; }
+  catch { return false; }
+}
+
+export function skipPrinterSetup() {
+  try { localStorage.setItem(venueKey("vendaura_printer_skipped"), "1"); }
+  catch {}
+}
+
+export function clearPrinterSetupSkip() {
+  try { localStorage.removeItem(venueKey("vendaura_printer_skipped")); }
+  catch {}
 }
 
 const line   = (w, c="-") => c.repeat(w);

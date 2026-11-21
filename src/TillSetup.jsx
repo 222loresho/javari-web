@@ -2,19 +2,21 @@ import { useEffect, useState } from "react";
 import { Printer, X, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
 import {
   getPaper, setPaper, getTillName, setTillName,
-  isPrinterSetUp, markPrinterSetUp, printTest,
+  isPrinterSetUp, markPrinterSetUp,
+  isPrinterSetupSkipped, skipPrinterSetup, clearPrinterSetupSkip,
+  printTest,
 } from "./print";
-
-const SKIP_KEY = "vendaura_till_skip_session";
 
 function openTillSetup() {
   window.dispatchEvent(new Event("vendaura:till-setup"));
 }
 
-export default function TillSetup() {
+export default function TillSetup({ user }) {
+  const venue = user?.market_name || user?.market_code || "";
   const [open, setOpen] = useState(() => {
+    if (!user) return false;
     if (isPrinterSetUp()) return false;
-    try { return !sessionStorage.getItem(SKIP_KEY); } catch { return true; }
+    return !isPrinterSetupSkipped();
   });
   const [step, setStep] = useState(0);
   const [paper, setPaperChoice] = useState(getPaper);
@@ -24,6 +26,7 @@ export default function TillSetup() {
 
   useEffect(() => {
     const reopen = () => {
+      clearPrinterSetupSkip();
       setPaperChoice(getPaper());
       setName(getTillName());
       setStep(0);
@@ -36,7 +39,7 @@ export default function TillSetup() {
   }, []);
 
   const close = () => {
-    try { sessionStorage.setItem(SKIP_KEY, "1"); } catch {}
+    skipPrinterSetup();
     setOpen(false);
   };
 
@@ -63,6 +66,7 @@ export default function TillSetup() {
     setPaper(paper);
     setTillName(name.trim());
     markPrinterSetUp();
+    clearPrinterSetupSkip();
     setOpen(false);
   };
 
@@ -83,8 +87,8 @@ export default function TillSetup() {
           <>
             <p className="text-muted" style={{ fontSize: "12.5px", lineHeight: 1.6, marginBottom: "14px" }}>
               {alreadySetUp
-                ? "Applies to this device only. Settings are remembered here."
-                : "One-time setup for this device. It is remembered here, so you only do it once."}
+                ? `Settings for ${venue || "this venue"} on this device.`
+                : `First time in ${venue || "this venue"} on this device. This runs once per venue and is remembered.`}
             </p>
 
             <div className="section-title" style={{ padding: 0, marginBottom: "8px" }}>Till name</div>
@@ -130,8 +134,9 @@ export default function TillSetup() {
           <>
             <div className="till-print-icon"><Printer size={26} /></div>
             <p className="text-muted" style={{ fontSize: "12.5px", lineHeight: 1.65, textAlign: "center", marginBottom: "14px" }}>
-              In the print dialog pick your receipt printer, set paper to <strong>{paper} mm</strong>,
-              margins to <strong>None</strong> and scale to <strong>100%</strong>.
+              If the print dialog opens, pick your receipt printer, set paper to <strong>{paper} mm</strong>,
+              margins to <strong>None</strong> and scale to <strong>100%</strong>. Launched from the
+              Vendaura Till shortcut, receipts print straight to the default printer with no dialog.
             </p>
 
             <button className="btn btn-primary full-btn" onClick={testPrint}>

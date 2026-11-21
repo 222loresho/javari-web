@@ -4,6 +4,7 @@ import POS from "./POS";
 import Admin from "./Admin";
 import CashierBills from "./CashierBills";
 import TillSetup from "./TillSetup";
+import { setPrintVenue } from "./print";
 import useSessionTimeout from "./useSessionTimeout";
 
 const SuperAdmin = lazy(() => import("./SuperAdmin"));
@@ -38,6 +39,8 @@ export default function App() {
 
   if (!user) return <Login onLogin={handleLogin} />;
 
+  setPrintVenue(user.market_id ?? user.market_code ?? "");
+
   if (user.role === "super_admin")
     return <Suspense fallback={<div className="loading-bar" />}><SuperAdmin user={user} onLogout={handleLogout} /></Suspense>;
 
@@ -60,7 +63,7 @@ export default function App() {
   return (
     <>
       {screen}
-      <TillSetup />
+      <TillSetup user={user} />
     </>
   );
 }

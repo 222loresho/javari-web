@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import api from "./api";
-import { Store, CheckCircle2, RefreshCw, Pause, Banknote, TrendingUp, CalendarDays, CalendarClock, ReceiptText, BarChart3, Crown, Settings, Users, UserRound, UserCog, UserPlus, Pencil, CreditCard, Play, ChevronUp, ChevronDown, Trash2, X, Plus, StickyNote, Webhook, Copy, Signature } from "lucide-react";
+import { Store, CheckCircle2, RefreshCw, Pause, Banknote, TrendingUp, CalendarDays, CalendarClock, ReceiptText, BarChart3, Crown, Settings, Users, UserRound, UserCog, UserPlus, Pencil, CreditCard, Play, ChevronUp, ChevronDown, Trash2, X, Plus, StickyNote, Webhook, Copy, Signature, Eraser } from "lucide-react";
 
 /* ── Constants ──────────────────────────────────────────────────────────── */
 const PLANS    = ["trial","basic","pro","enterprise"];
@@ -204,6 +204,15 @@ export default function SuperAdmin({ user, onLogout }) {
     if (!window.confirm("Delete this market? This cannot be undone.")) return;
     try { await api.delete(`/superadmin/markets/${id}`); toast("Deleted!"); fetchAll(); }
     catch(e) { toast(e.response?.data?.error||"Failed","error"); }
+  };
+
+  const clearTables = async (m) => {
+    const where = m ? `${m.name}` : "all venues";
+    if (!window.confirm(`Clear every open table in ${where}?\n\nPending and submitted table orders are deleted. Paid sales are kept.`)) return;
+    try {
+      const r = await api.post("/superadmin/orders/clear", m ? { market_id: m.id } : {});
+      toast(r.data.message);
+    } catch(e) { toast(e.response?.data?.error || "Failed", "error"); }
   };
 
   const quickStatus = async (m, status) => {
@@ -470,10 +479,16 @@ export default function SuperAdmin({ user, onLogout }) {
                   <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"28px",color:"#c9a84c"}}>Markets</div>
                   <div style={{fontSize:"13px",color:"#5c5870"}}>{markets.length} clients · KES {totalSubRev.toLocaleString()}/mo subscription revenue</div>
                 </div>
-                <button className="sa-btn" onClick={() => { setEditItem(null); setForm(blankMarket()); setShowForm(!showForm); }}
-                  style={{background:"rgba(201,168,76,0.15)",color:"#c9a84c",border:"1px solid rgba(201,168,76,0.3)"}}>
-                  {showForm&&!editItem?<><X size={12}/> Cancel</>:<><Plus size={12}/> Add Market</>}
-                </button>
+                <div style={{display:"flex",gap:"8px",flexWrap:"wrap"}}>
+                  <button className="sa-btn" onClick={() => clearTables(null)}
+                    style={{background:"rgba(248,113,113,0.08)",color:"#f87171",border:"1px solid rgba(248,113,113,0.2)"}}>
+                    <Eraser size={12}/> Clear All Tables
+                  </button>
+                  <button className="sa-btn" onClick={() => { setEditItem(null); setForm(blankMarket()); setShowForm(!showForm); }}
+                    style={{background:"rgba(201,168,76,0.15)",color:"#c9a84c",border:"1px solid rgba(201,168,76,0.3)"}}>
+                    {showForm&&!editItem?<><X size={12}/> Cancel</>:<><Plus size={12}/> Add Market</>}
+                  </button>
+                </div>
               </div>
 
               {/* Market Form */}
@@ -602,6 +617,7 @@ export default function SuperAdmin({ user, onLogout }) {
                     <div style={{display:"flex",gap:"8px",flexWrap:"wrap",alignItems:"center"}}>
                       <button className="sa-btn" onClick={()=>startEdit(m)} style={{background:"rgba(255,255,255,0.04)",color:"#94a3b8",border:"1px solid rgba(255,255,255,0.08)"}}><Pencil size={12}/> Edit</button>
                       <button className="sa-btn" onClick={()=>recordPayment(m)} style={{background:"rgba(201,168,76,0.1)",color:"#c9a84c",border:"1px solid rgba(201,168,76,0.25)"}}><CreditCard size={12}/> Record Payment</button>
+                      <button className="sa-btn" onClick={()=>clearTables(m)} style={{background:"rgba(248,113,113,0.08)",color:"#f87171",border:"1px solid rgba(248,113,113,0.15)"}}><Eraser size={12}/> Clear Tables</button>
                       {m.status!=="active"    && <button className="qbtn" onClick={()=>quickStatus(m,"active")}    style={{background:"rgba(74,222,128,0.1)",color:"#4ade80",borderColor:"rgba(74,222,128,0.2)"}}><CheckCircle2 size={12}/> Activate</button>}
                       {m.status!=="suspended" && <button className="qbtn" onClick={()=>quickStatus(m,"suspended")} style={{background:"rgba(248,113,113,0.1)",color:"#f87171",borderColor:"rgba(248,113,113,0.2)"}}><Pause size={12}/> Suspend</button>}
                       {m.notes && <button className="qbtn" onClick={()=>setExpanded(expanded===m.id?null:m.id)} style={{background:"rgba(255,255,255,0.04)",color:"#5c5870",borderColor:"rgba(255,255,255,0.08)"}}>{expanded===m.id?<ChevronUp size={11}/>:<ChevronDown size={11}/>} Notes</button>}
