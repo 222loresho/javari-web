@@ -3,7 +3,7 @@ import api from "./api";
 import { fmtKsh } from "./format";
 import { productImage, monogram } from "./menuImages";
 import { Settings, Package, Tags, BarChart3, CheckCircle2, Users, CalendarDays, TrendingUp, PackageSearch, BookOpen, ShoppingCart, LogOut, User, Pencil, Trash2, AlertTriangle, Printer } from "lucide-react";
-import { getPaper, setPaper, printTest } from "./print";
+import { getPaper, setPaper, printTest, getPrinterName } from "./print";
 
 const ClearedBills   = lazy(() => import("./ClearedBills"));
 const MenuQR         = lazy(() => import("./MenuQR"));
@@ -207,6 +207,10 @@ export default function Admin({ user, onLogout, onSwitchToPOS }) {
           </div>
           <div className="card">
             <div className="section-title" style={{padding:0,marginBottom:"8px"}}>Printer setup</div>
+            <p className="text-muted" style={{fontSize:"12.5px",lineHeight:1.65,marginBottom:"8px"}}>
+              Receipt printer: <strong style={{color:"var(--text)"}}>{getPrinterName() || "Not named yet"}</strong>
+              {!getPrinterName() && " — set it in the till setup guide"}
+            </p>
             <p className="text-muted" style={{fontSize:"12.5px",lineHeight:1.65}}>
               Install the printer with its own driver and set it as the system default. In the print dialog pick the printer, set Paper to the roll size above, Margins to None and Scale to 100%. Receipts print black on white at the roll width, so they never get scaled or clipped.
             </p>

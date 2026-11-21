@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Printer, X, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
 import {
   getPaper, setPaper, getTillName, setTillName,
+  getPrinterName, setPrinterName,
   isPrinterSetUp, markPrinterSetUp,
   isPrinterSetupSkipped, skipPrinterSetup, clearPrinterSetupSkip,
   printTest,
@@ -21,6 +22,7 @@ export default function TillSetup({ user }) {
   const [step, setStep] = useState(0);
   const [paper, setPaperChoice] = useState(getPaper);
   const [name, setName] = useState(getTillName);
+  const [printer, setPrinter] = useState(getPrinterName);
   const [printed, setPrinted] = useState(false);
   const [printFailed, setPrintFailed] = useState(false);
 
@@ -29,6 +31,7 @@ export default function TillSetup({ user }) {
       clearPrinterSetupSkip();
       setPaperChoice(getPaper());
       setName(getTillName());
+      setPrinter(getPrinterName());
       setStep(0);
       setPrinted(false);
       setPrintFailed(false);
@@ -65,6 +68,7 @@ export default function TillSetup({ user }) {
   const finish = () => {
     setPaper(paper);
     setTillName(name.trim());
+    setPrinterName(printer.trim());
     markPrinterSetUp();
     clearPrinterSetupSkip();
     setOpen(false);
@@ -133,10 +137,24 @@ export default function TillSetup({ user }) {
         {step === 1 && (
           <>
             <div className="till-print-icon"><Printer size={26} /></div>
-            <p className="text-muted" style={{ fontSize: "12.5px", lineHeight: 1.65, textAlign: "center", marginBottom: "14px" }}>
-              If the print dialog opens, pick your receipt printer, set paper to <strong>{paper} mm</strong>,
-              margins to <strong>None</strong> and scale to <strong>100%</strong>. Launched from the
-              Vendaura Till shortcut, receipts print straight to the default printer with no dialog.
+            <p className="text-muted" style={{ fontSize: "12.5px", lineHeight: 1.65, textAlign: "center", marginBottom: "12px" }}>
+              Choose the printer in the dialog the test opens. Browsers do not expose a printer list,
+              but Chrome remembers the one you pick for this till. Set paper to <strong>{paper} mm</strong>,
+              margins to <strong>None</strong> and scale to <strong>100%</strong>.
+            </p>
+
+            <div className="section-title" style={{ padding: 0, marginBottom: "8px" }}>Receipt printer</div>
+            <input
+              className="input"
+              placeholder="Printer name, e.g. EPSON TM-T20"
+              value={printer}
+              maxLength={40}
+              onChange={e => setPrinter(e.target.value)}
+              style={{ marginBottom: "10px" }}
+            />
+            <p className="text-muted" style={{ fontSize: "11.5px", lineHeight: 1.55, marginBottom: "12px" }}>
+              Remembered here so whoever uses this till knows which printer to pick.
+              With the Vendaura Till shortcut, receipts go straight to the default printer without a dialog.
             </p>
 
             <button className="btn btn-primary full-btn" onClick={testPrint}>

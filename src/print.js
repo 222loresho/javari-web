@@ -41,6 +41,18 @@ export function setTillName(name) {
   } catch {}
 }
 
+export function getPrinterName() {
+  try { return localStorage.getItem(venueKey("vendaura_printer_name")) || ""; }
+  catch { return ""; }
+}
+
+export function setPrinterName(name) {
+  try {
+    if (name) localStorage.setItem(venueKey("vendaura_printer_name"), name);
+    else localStorage.removeItem(venueKey("vendaura_printer_name"));
+  } catch {}
+}
+
 export function isPrinterSetUp() {
   try { return localStorage.getItem(venueKey("vendaura_printer_ready")) === "1"; }
   catch { return false; }
