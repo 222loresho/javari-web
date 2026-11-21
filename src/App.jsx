@@ -20,7 +20,7 @@ export default function App() {
     setUser(u);
     setView(u.role === "super_admin" ? "default" : "pos");
   };
-  const TIMEOUT_MINUTES = 30;
+  const TIMEOUT_MINUTES = 2.5;
   useSessionTimeout(() => {
     if (user) {
       handleLogout();
